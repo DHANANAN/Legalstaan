@@ -1,0 +1,40 @@
+{
+  "levels": [
+    {
+      "id": "1",
+      "title": "Lecture 1 – Introduction to Law",
+      "description": "Basics of the Indian Legal System",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_1"
+    },
+    {
+      "id": "2",
+      "title": "Lecture 2 – Constitutional Law",
+      "description": "Fundamental Rights, DPSP & Duties",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_2"
+    },
+    {
+      "id": "3",
+      "title": "Lecture 3 – Civil Procedure Code",
+      "description": "CPC Overview and Key Provisions",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_3"
+    },
+    {
+      "id": "4",
+      "title": "Lecture 4 – Indian Penal Code",
+      "description": "IPC and CrPC Fundamentals",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_4"
+    },
+    {
+      "id": "5",
+      "title": "Lecture 5 – Law of Evidence",
+      "description": "Indian Evidence Act Essentials",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_5"
+    },
+    {
+      "id": "6",
+      "title": "Lecture 6 – Transfer of Property",
+      "description": "TPA 1882 and key doctrines",
+      "file_id": "REPLACE_WITH_GOOGLE_DRIVE_FILE_ID_6"
+    }
+  ]
+}

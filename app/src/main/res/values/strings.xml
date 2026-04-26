@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Legalstaan</string>
+    <string name="tagline">Your Legal Learning Partner</string>
+    <string name="banner_desc">Legalstaan banner</string>
+    <string name="welcome_text">Welcome to Legalstaan</string>
+    <string name="subtitle_text">Prepare smarter. Score better.</string>
+    <string name="video_lectures">Video Lectures</string>
+    <string name="video_sub">Watch recorded sessions</string>
+    <string name="take_quiz">Take a Quiz</string>
+    <string name="quiz_sub">Practice mock tests online</string>
+</resources>
