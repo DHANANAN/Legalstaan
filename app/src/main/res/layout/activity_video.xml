@@ -4,27 +4,17 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_videos"
+    <WebView
+        android:id="@+id/web_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#F5F5F5"
-        android:clipToPadding="false"
-        android:paddingVertical="8dp"
+        android:layout_height="match_parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="#FFFFFF"
         android:visibility="visible" />
-
-    <FrameLayout
-        android:id="@+id/player_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#000000"
-        android:visibility="gone">
-
-        <androidx.media3.ui.PlayerView
-            android:id="@+id/player_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
 
 </FrameLayout>

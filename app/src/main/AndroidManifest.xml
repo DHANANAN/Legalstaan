@@ -12,9 +12,11 @@
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.LegalstaanApp">
 
+        <!-- Splash -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.LegalstaanApp.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,18 +24,30 @@
             </intent-filter>
         </activity>
 
+        <!-- Main (home + bottom nav) -->
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
+        <!-- Subject video list -->
+        <activity
+            android:name=".SubjectVideosActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- Video player (WebView streaming Google Drive) -->
         <activity
             android:name=".VideoActivity"
             android:exported="false"
-            android:screenOrientation="sensorLandscape" />
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
+        <!-- Quiz (WebView MockS) -->
         <activity
             android:name=".QuizActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
     </application>
 

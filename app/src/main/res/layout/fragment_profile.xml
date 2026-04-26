@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surfaceColor">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Profile header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingVertical="24dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/circle_avatar_bg"
+                android:contentDescription="Avatar"
+                android:padding="16dp"
+                android:src="@drawable/ic_nav_profile"
+                android:tint="#9E9E9E" />
+
+            <TextView
+                android:id="@+id/tv_profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/profile_name"
+                android:textColor="#212121"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Organization Code: LS2024"
+                android:textColor="@color/textSecondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="@color/surfaceColor" />
+
+        <!-- Menu items -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:orientation="vertical">
+
+            <include layout="@layout/item_profile_row" android:id="@+id/row_certificates" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <include layout="@layout/item_profile_row" android:id="@+id/row_downloads" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <include layout="@layout/item_profile_row" android:id="@+id/row_free_material" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <include layout="@layout/item_profile_row" android:id="@+id/row_settings" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <include layout="@layout/item_profile_row" android:id="@+id/row_how_to" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
+            <include layout="@layout/item_profile_row" android:id="@+id/row_privacy" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:background="@color/surfaceColor" />
+
+    </LinearLayout>
+</ScrollView>

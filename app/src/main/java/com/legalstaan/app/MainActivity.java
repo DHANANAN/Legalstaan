@@ -1,14 +1,11 @@
 package com.legalstaan.app;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
-import com.bumptech.glide.Glide;
+import androidx.fragment.app.Fragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final String BANNER_URL = "https://i.ibb.co/fz0BRgQG/GQ4-Ul-NMW.jpg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,18 +16,37 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.app_name);
         }
 
-        ImageView ivBanner = findViewById(R.id.iv_banner);
-        Glide.with(this)
-                .load(BANNER_URL)
-                .placeholder(R.color.primaryColor)
-                .error(R.color.primaryColor)
-                .centerCrop()
-                .into(ivBanner);
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
-        findViewById(R.id.card_videos).setOnClickListener(v ->
-                startActivity(new Intent(this, VideoActivity.class)));
+        if (savedInstanceState == null) {
+            loadFragment(new HomeFragment());
+        }
 
-        findViewById(R.id.card_quiz).setOnClickListener(v ->
-                startActivity(new Intent(this, QuizActivity.class)));
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            Fragment fragment;
+            if (id == R.id.nav_courses) {
+                fragment = new CoursesFragment();
+                setTitle("Courses");
+            } else if (id == R.id.nav_chats) {
+                fragment = new ChatsFragment();
+                setTitle("Chats");
+            } else if (id == R.id.nav_profile) {
+                fragment = new ProfileFragment();
+                setTitle("Profile");
+            } else {
+                fragment = new HomeFragment();
+                setTitle(R.string.app_name);
+            }
+            loadFragment(fragment);
+            return true;
+        });
+    }
+
+    private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 }

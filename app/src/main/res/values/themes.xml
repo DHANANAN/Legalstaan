@@ -5,13 +5,25 @@
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
         <item name="colorAccent">@color/accentColor</item>
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowBackground">@color/surfaceColor</item>
+        <item name="actionBarStyle">@style/LegalstaanActionBar</item>
+    </style>
+
+    <style name="LegalstaanActionBar" parent="Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@color/primaryColor</item>
+        <item name="titleTextStyle">@style/LegalstaanActionBarTitle</item>
+    </style>
+
+    <style name="LegalstaanActionBarTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="Theme.LegalstaanApp.Splash" parent="Theme.LegalstaanApp">
         <item name="android:windowNoTitle">true</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
 
 </resources>

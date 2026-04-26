@@ -1,165 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:background="@android:color/white"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 
-        <ImageView
-            android:id="@+id/iv_banner"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:contentDescription="@string/banner_desc"
-            android:scaleType="centerCrop"
-            android:background="@color/primaryColor" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="4dp"
-            android:text="@string/welcome_text"
-            android:textColor="@color/primaryColor"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/subtitle_text"
-            android:textColor="@color/textSecondary"
-            android:textSize="14sp" />
-
-        <!-- Video Lectures Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_videos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:rippleColor="@color/rippleColor">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/primaryColor"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="20dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/video_lectures"
-                    android:src="@android:drawable/ic_media_play"
-                    android:tint="@android:color/white" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/video_lectures"
-                        android:textColor="@android:color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/video_sub"
-                        android:textColor="#CCFFFFFF"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription=""
-                    android:src="@android:drawable/ic_media_next"
-                    android:tint="#80FFFFFF" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Quiz Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_quiz"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="24dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp"
-            app:rippleColor="@color/rippleColor">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/accentColor"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="20dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/take_quiz"
-                    android:src="@android:drawable/ic_menu_edit"
-                    android:tint="@android:color/white" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/take_quiz"
-                        android:textColor="@android:color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/quiz_sub"
-                        android:textColor="#CCFFFFFF"
-                        android:textSize="13sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription=""
-                    android:src="@android:drawable/ic_media_next"
-                    android:tint="#80FFFFFF" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</LinearLayout>
