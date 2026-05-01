@@ -1,8 +1,8 @@
 package com.legalstaan.app;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -11,27 +11,43 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 
 public class LiveStreamActivity extends AppCompatActivity {
 
     private WebView webView;
-    private String pendingUrl;
-    private static final int PERM_REQ = 201;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ThemeHelper.apply(this);
-        setContentView(R.layout.activity_live_stream);
 
-        String platform  = getIntent().getStringExtra("platform");
-        String roomId    = getIntent().getStringExtra("room_id");
-        String ytUrl     = getIntent().getStringExtra("youtube_url");
-        String title     = getIntent().getStringExtra("title");
+        String platform   = getIntent().getStringExtra("platform");
+        String roomId     = getIntent().getStringExtra("room_id");
+        String ytUrl      = getIntent().getStringExtra("youtube_url");
+        String title      = getIntent().getStringExtra("title");
         boolean isFaculty = getIntent().getBooleanExtra("is_faculty", false);
+
+        if ("jitsi".equals(platform)) {
+            // Android WebView sandboxes both WebRTC camera/mic and Google OAuth —
+            // Chrome Custom Tabs uses the real Chrome engine so both work correctly.
+            StringBuilder cfg = new StringBuilder("#config.prejoinPageEnabled=false");
+            cfg.append("&config.enableWelcomePage=false");
+            cfg.append("&config.disableDeepLinking=true");
+            if (!isFaculty) {
+                cfg.append("&config.startWithVideoMuted=true");
+                cfg.append("&config.startWithAudioMuted=true");
+            }
+            openInCustomTab("https://meet.jit.si/" + roomId + cfg);
+            finish();
+            return;
+        }
+
+        // YouTube Live — WebView works fine for read-only embed playback
+        setContentView(R.layout.activity_live_stream);
 
         Toolbar toolbar = findViewById(R.id.toolbar_live);
         setSupportActionBar(toolbar);
@@ -55,58 +71,31 @@ public class LiveStreamActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(PermissionRequest request) {
-                // Grant WebRTC camera/mic access at the WebView level
                 request.grant(request.getResources());
             }
         });
 
-        String url;
-        if ("jitsi".equals(platform)) {
-            StringBuilder cfg = new StringBuilder("#config.prejoinPageEnabled=false");
-            cfg.append("&config.enableWelcomePage=false");
-            cfg.append("&config.disableDeepLinking=true");
-            if (!isFaculty) {
-                // Students join muted to save bandwidth
-                cfg.append("&config.startWithVideoMuted=true");
-                cfg.append("&config.startWithAudioMuted=true");
-            }
-            url = "https://meet.jit.si/" + roomId + cfg;
-        } else {
-            // YouTube embed — adaptive quality works down to 240p on poor connections
-            String videoId = extractYouTubeId(ytUrl);
-            url = "https://www.youtube.com/embed/" + videoId
-                    + "?autoplay=1&rel=0&modestbranding=1&playsinline=1";
-        }
-
-        if ("jitsi".equals(platform)) {
-            // Request Android-level camera/mic permissions before loading Jitsi WebRTC
-            pendingUrl = url;
-            requestMediaPermissions();
-        } else {
-            webView.loadUrl(url);
-        }
+        String videoId = extractYouTubeId(ytUrl);
+        webView.loadUrl("https://www.youtube.com/embed/" + videoId
+                + "?autoplay=1&rel=0&modestbranding=1&playsinline=1");
     }
 
-    private void requestMediaPermissions() {
-        boolean camOk  = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED;
-        boolean micOk  = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED;
-        if (camOk && micOk) {
-            webView.loadUrl(pendingUrl);
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
-                    PERM_REQ);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int req, @androidx.annotation.NonNull String[] perms,
-                                           @androidx.annotation.NonNull int[] results) {
-        super.onRequestPermissionsResult(req, perms, results);
-        if (req == PERM_REQ && pendingUrl != null) {
-            webView.loadUrl(pendingUrl);
+    private void openInCustomTab(String url) {
+        try {
+            int color = ContextCompat.getColor(this, R.color.primaryColor);
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(color)
+                    .build();
+            CustomTabsIntent intent = new CustomTabsIntent.Builder()
+                    .setDefaultColorSchemeParams(params)
+                    .setShowTitle(true)
+                    .build();
+            intent.launchUrl(this, Uri.parse(url));
+        } catch (Exception e) {
+            // Fallback: open in whatever browser the device has
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            } catch (Exception ignored) {}
         }
     }
 
