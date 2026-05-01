@@ -1,23 +1,50 @@
 package com.legalstaan.app;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class ProfileFragment extends Fragment {
+
+    private static final String PREFS = "legalstaan_prefs";
+    private static final String KEY_PIC = "profile_pic_path";
+
+    private ImageView ivAvatar;
+    private ActivityResultLauncher<String> imagePicker;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        imagePicker = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) saveAndLoadProfilePic(uri);
+                });
+    }
 
     @Nullable
     @Override
@@ -31,20 +58,28 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set row labels
-        setRowLabel(view, R.id.row_certificates, "Course Certificates");
-        setRowLabel(view, R.id.row_downloads,    "Offline Downloads");
-        setRowLabel(view, R.id.row_free_material,"Free Material");
-        setRowLabel(view, R.id.row_settings,     "Settings");
-        setRowLabel(view, R.id.row_how_to,       "How to use the App");
-        setRowLabel(view, R.id.row_privacy,      "Privacy Policy");
-        setRowLabel(view, R.id.row_sign_out,     "Sign Out");
+        ivAvatar = view.findViewById(R.id.iv_avatar);
+
+        // Load saved profile pic
+        SharedPreferences prefs = requireContext().getSharedPreferences(PREFS, 0);
+        String savedPath = prefs.getString(KEY_PIC, null);
+        if (savedPath != null) {
+            File f = new File(savedPath);
+            if (f.exists()) {
+                Glide.with(this).load(f).circleCrop().into(ivAvatar);
+            }
+        }
+
+        // Tap avatar to change photo
+        ivAvatar.setOnClickListener(v -> imagePicker.launch("image/*"));
+        view.findViewById(R.id.tv_change_photo).setOnClickListener(v -> imagePicker.launch("image/*"));
 
         // User info
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             TextView nameTv = view.findViewById(R.id.tv_profile_name);
-            nameTv.setText(user.getDisplayName() != null ? user.getDisplayName() : user.getEmail());
+            String name = user.getDisplayName();
+            nameTv.setText((name != null && !name.isEmpty()) ? name : "Legalstaan Student");
 
             TextView emailTv = view.findViewById(R.id.tv_profile_email);
             if (emailTv != null) emailTv.setText(user.getEmail());
@@ -60,16 +95,87 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-        // "Coming soon" rows
-        int[] comingSoon = {R.id.row_certificates, R.id.row_downloads,
-                R.id.row_free_material, R.id.row_settings,
-                R.id.row_how_to, R.id.row_privacy};
-        for (int id : comingSoon) {
-            view.findViewById(id).setOnClickListener(
-                    v -> Toast.makeText(requireContext(), "Coming Soon!", Toast.LENGTH_SHORT).show());
-        }
+        // Row labels
+        setRowLabel(view, R.id.row_certificates, "Course Certificates");
+        setRowLabel(view, R.id.row_downloads,    "Offline Downloads");
+        setRowLabel(view, R.id.row_free_material,"Free Material");
+        setRowLabel(view, R.id.row_settings,     "Settings");
+        setRowLabel(view, R.id.row_how_to,       "How to Use the App");
+        setRowLabel(view, R.id.row_privacy,      "Privacy Policy");
+        setRowLabel(view, R.id.row_sign_out,     "Sign Out");
+
+        // Row click handlers
+        view.findViewById(R.id.row_certificates).setOnClickListener(v ->
+                showInfo("Course Certificates", "Certificates are awarded on completing a full course. Stay consistent with your lectures to earn yours!"));
+
+        view.findViewById(R.id.row_downloads).setOnClickListener(v ->
+                showInfo("Offline Downloads", "Offline download support is coming in the next update. Make sure you have a good internet connection for now."));
+
+        view.findViewById(R.id.row_free_material).setOnClickListener(v ->
+                openUrl("https://legalstaan.com/"));
+
+        view.findViewById(R.id.row_settings).setOnClickListener(v -> showSettings(view));
+
+        view.findViewById(R.id.row_how_to).setOnClickListener(v -> showHowToUse());
+
+        view.findViewById(R.id.row_privacy).setOnClickListener(v ->
+                openUrl("https://legalstaan.com/"));
 
         view.findViewById(R.id.row_sign_out).setOnClickListener(v -> signOut());
+    }
+
+    private void showSettings(View root) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Settings")
+                .setMessage("• Dark Mode: use the toggle in your profile\n\n• Notifications: coming soon\n\n• App Version: 1.2\n\n• Contact: contactlegalstaan@gmail.com")
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void showHowToUse() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("How to Use Legalstaan")
+                .setMessage(
+                        "1. Home — Quick access to all features and social links.\n\n" +
+                        "2. Courses — Browse 10 subjects, 105 video lectures. Tap any subject to see its lectures.\n\n" +
+                        "3. Community — Chat with Rutu AI for app guidance and legal topic help.\n\n" +
+                        "4. Profile — Update your picture, toggle dark mode, and access settings.\n\n" +
+                        "5. Quiz — Tap 'Test Series' on the home screen to take practice MCQs.\n\n" +
+                        "Tip: Use dark mode for comfortable night-time studying!")
+                .setPositiveButton("Got it!", null)
+                .show();
+    }
+
+    private void showInfo(String title, String msg) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void openUrl(String url) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
+    private void saveAndLoadProfilePic(Uri uri) {
+        try {
+            InputStream in = requireContext().getContentResolver().openInputStream(uri);
+            File outFile = new File(requireContext().getFilesDir(), "profile_pic.jpg");
+            OutputStream out = new FileOutputStream(outFile);
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+            in.close();
+            out.close();
+
+            requireContext().getSharedPreferences(PREFS, 0)
+                    .edit().putString(KEY_PIC, outFile.getAbsolutePath()).apply();
+
+            Glide.with(this).load(outFile).circleCrop().into(ivAvatar);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Could not set photo", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void signOut() {
@@ -80,7 +186,6 @@ public class ProfileFragment extends Fragment {
                 .build();
         GoogleSignInClient client = GoogleSignIn.getClient(requireActivity(), gso);
         client.signOut().addOnCompleteListener(task -> {
-            // Go directly to LoginActivity and clear the back stack
             Intent intent = new Intent(requireContext(), LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
