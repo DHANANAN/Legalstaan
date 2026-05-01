@@ -84,15 +84,17 @@ public class LiveFragment extends Fragment {
         listener = db.collection("live_sessions")
                 .whereEqualTo("live", true)
                 .addSnapshotListener((snapshots, e) -> {
-                    if (!isAdded()) return;
+                    if (!isAdded() || snapshots == null) return;
                     sessions.clear();
-                    if (snapshots != null) {
-                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        try {
                             LiveSession s = doc.toObject(LiveSession.class);
                             if (s != null) {
                                 s.setSessionId(doc.getId());
                                 sessions.add(s);
                             }
+                        } catch (Exception ex) {
+                            // Malformed document — skip it
                         }
                     }
                     adapter.notifyDataSetChanged();

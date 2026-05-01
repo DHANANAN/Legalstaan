@@ -88,13 +88,17 @@ public class HomeFragment extends Fragment {
                     if (!isAdded() || snapshots == null) return;
                     List<DocumentSnapshot> docs = snapshots.getDocuments();
                     if (!docs.isEmpty()) {
-                        LiveSession s = docs.get(0).toObject(LiveSession.class);
-                        if (s != null) {
-                            s.setSessionId(docs.get(0).getId());
-                            currentSession = s;
-                            tvLiveTitle.setText(s.getTitle() != null ? s.getTitle() : "Live Class");
-                            tvLiveFaculty.setText(s.getFacultyName() != null ? s.getFacultyName() : "Faculty");
-                            cardLive.setVisibility(View.VISIBLE);
+                        try {
+                            LiveSession s = docs.get(0).toObject(LiveSession.class);
+                            if (s != null) {
+                                s.setSessionId(docs.get(0).getId());
+                                currentSession = s;
+                                tvLiveTitle.setText(s.getTitle() != null ? s.getTitle() : "Live Class");
+                                tvLiveFaculty.setText(s.getFacultyName() != null ? s.getFacultyName() : "Faculty");
+                                cardLive.setVisibility(View.VISIBLE);
+                            }
+                        } catch (Exception ex) {
+                            cardLive.setVisibility(View.GONE);
                         }
                     } else {
                         currentSession = null;
