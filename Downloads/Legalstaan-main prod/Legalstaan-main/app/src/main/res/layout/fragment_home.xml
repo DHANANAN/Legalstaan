@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Banner Image (loaded by Glide at runtime) -->
+        <ImageView
+            android:id="@+id/iv_banner"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/banner_desc"
+            android:background="@color/primaryColor" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Welcome header -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tv_welcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hello, Aspirant!"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorHeadingText" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ready for your legal journey?"
+                        android:textSize="14sp"
+                        android:textColor="@color/colorSecondaryText" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/iv_user_avatar"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/app_icon" />
+            </RelativeLayout>
+
+            <!-- Feature cards row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_recorded"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="6dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/colorCardStroke">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_media_play"
+                            app:tint="@color/primaryColor" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Lectures"
+                            android:layout_marginTop="8dp"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorHeadingText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="100+ Videos"
+                            android:textSize="11sp"
+                            android:textColor="@color/colorSecondaryText" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_test"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="6dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/colorCardStroke">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_menu_edit"
+                            app:tint="@color/accentColor" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mock Tests"
+                            android:layout_marginTop="8dp"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorHeadingText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Practice Now"
+                            android:textSize="11sp"
+                            android:textColor="@color/colorSecondaryText" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Connect section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connect With Us"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"
+                android:textColor="@color/colorHeadingText" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="24dp">
+
+                <ImageButton
+                    android:id="@+id/iv_youtube"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/circle_avatar_bg"
+                    android:src="@android:drawable/ic_media_play"
+                    android:contentDescription="YouTube"
+                    app:tint="#FF0000" />
+
+                <ImageButton
+                    android:id="@+id/iv_whatsapp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/circle_avatar_bg"
+                    android:src="@android:drawable/stat_sys_phone_call"
+                    android:contentDescription="WhatsApp"
+                    app:tint="#25D366" />
+
+                <ImageButton
+                    android:id="@+id/iv_instagram"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/circle_avatar_bg"
+                    android:src="@android:drawable/ic_menu_camera"
+                    android:contentDescription="Instagram"
+                    app:tint="#E1306C" />
+
+                <ImageButton
+                    android:id="@+id/iv_website"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/circle_avatar_bg"
+                    android:src="@android:drawable/ic_menu_info_details"
+                    android:contentDescription="Website"
+                    app:tint="@color/primaryColor" />
+
+            </LinearLayout>
+
+            <!-- Footer -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:text="© 2024 Legalstaan. All rights reserved.\nMIT License"
+                android:textSize="11sp"
+                android:textColor="@color/colorSecondaryText"
+                android:layout_marginBottom="8dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

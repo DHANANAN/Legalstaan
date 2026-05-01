@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colors - fixed across all themes -->
+    <color name="primaryColor">#1A1A3F</color>
+    <color name="primaryDarkColor">#10102A</color>
+    <color name="accentColor">#D4AF37</color>
+
+    <!-- Semantic colors - overridden in values-night/colors.xml -->
+    <color name="colorHeadingText">#1A1A3F</color>
+    <color name="colorBodyText">#212121</color>
+    <color name="colorSecondaryText">#757575</color>
+    <color name="colorBackground">#F5F5FA</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorDivider">#EBEBEB</color>
+    <color name="colorCardStroke">#E9ECEF</color>
+    <color name="colorIconTint">#1A1A3F</color>
+
+    <!-- Legacy aliases kept for compatibility -->
+    <color name="textSecondary">#757575</color>
+    <color name="rippleColor">#33000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="surfaceColor">#F5F5FA</color>
+</resources>
