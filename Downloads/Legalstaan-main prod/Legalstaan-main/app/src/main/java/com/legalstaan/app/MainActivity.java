@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new HomeFragment(), "Legalstaan");
             } else if (id == R.id.nav_courses) {
                 loadFragment(new CoursesFragment(), "Courses");
+            } else if (id == R.id.nav_live) {
+                loadFragment(new LiveFragment(), "Live Classes");
             } else if (id == R.id.nav_chats) {
                 loadFragment(new ChatsFragment(), "Community");
             } else if (id == R.id.nav_profile) {

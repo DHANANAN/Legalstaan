@@ -15,8 +15,17 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import java.util.List;
 
 public class HomeFragment extends Fragment {
+
+    private ListenerRegistration liveListener;
+    private View cardLive;
+    private TextView tvLiveTitle, tvLiveFaculty;
+    private LiveSession currentSession;
 
     @Nullable
     @Override
@@ -29,7 +38,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Load real banner image via Glide (falls back to vector placeholder)
         Glide.with(this)
                 .load("https://i.ibb.co/fz0BRgQG/GQ4-Ul-NMW.jpg")
                 .placeholder(R.drawable.banner)
@@ -37,7 +45,6 @@ public class HomeFragment extends Fragment {
                 .centerCrop()
                 .into((ImageView) view.findViewById(R.id.iv_banner));
 
-        // Personalised welcome
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             TextView tvWelcome = view.findViewById(R.id.tv_welcome);
@@ -46,6 +53,13 @@ public class HomeFragment extends Fragment {
                 tvWelcome.setText("Hello, " + name.split(" ")[0] + "!");
             }
         }
+
+        // Live session card
+        cardLive = view.findViewById(R.id.card_live);
+        tvLiveTitle = view.findViewById(R.id.tv_live_title);
+        tvLiveFaculty = view.findViewById(R.id.tv_live_faculty);
+        view.findViewById(R.id.btn_watch_live).setOnClickListener(v -> joinCurrentSession());
+        cardLive.setOnClickListener(v -> joinCurrentSession());
 
         // Navigation cards
         view.findViewById(R.id.card_recorded).setOnClickListener(
@@ -62,6 +76,56 @@ public class HomeFragment extends Fragment {
                 v -> openUrl("https://www.instagram.com/legalstaan"));
         view.findViewById(R.id.iv_website).setOnClickListener(
                 v -> openUrl("https://legalstaan.com/"));
+
+        listenForLiveSessions();
+    }
+
+    private void listenForLiveSessions() {
+        liveListener = FirebaseFirestore.getInstance()
+                .collection("live_sessions")
+                .whereEqualTo("live", true)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (!isAdded() || snapshots == null) return;
+                    List<DocumentSnapshot> docs = snapshots.getDocuments();
+                    if (!docs.isEmpty()) {
+                        LiveSession s = docs.get(0).toObject(LiveSession.class);
+                        if (s != null) {
+                            s.setSessionId(docs.get(0).getId());
+                            currentSession = s;
+                            tvLiveTitle.setText(s.getTitle() != null ? s.getTitle() : "Live Class");
+                            tvLiveFaculty.setText(s.getFacultyName() != null ? s.getFacultyName() : "Faculty");
+                            cardLive.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        currentSession = null;
+                        if (cardLive != null) cardLive.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    private void joinCurrentSession() {
+        if (currentSession == null) return;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String email = user != null && user.getEmail() != null
+                ? user.getEmail().toLowerCase().trim() : "";
+        boolean isOwner = FacultyManager.isFaculty(email) && email.equals(
+                currentSession.getFacultyEmail() != null
+                        ? currentSession.getFacultyEmail().toLowerCase() : "");
+
+        Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
+        intent.putExtra("platform", currentSession.getPlatform());
+        intent.putExtra("room_id", currentSession.getRoomId());
+        intent.putExtra("youtube_url", currentSession.getYoutubeUrl());
+        intent.putExtra("title", currentSession.getTitle());
+        intent.putExtra("session_id", currentSession.getSessionId());
+        intent.putExtra("is_faculty", isOwner);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (liveListener != null) liveListener.remove();
     }
 
     private void switchToTab(int navId) {
