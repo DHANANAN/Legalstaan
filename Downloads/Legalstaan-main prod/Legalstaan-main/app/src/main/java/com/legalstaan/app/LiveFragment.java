@@ -40,7 +40,7 @@ public class LiveFragment extends Fragment {
     private ListenerRegistration listener;
     private final List<LiveSession> sessions = new ArrayList<>();
     private String currentUserEmail = "";
-    private String currentUserName = "Faculty";
+    private String currentUserName  = "Faculty";
     private boolean isFaculty;
 
     @Nullable
@@ -58,12 +58,12 @@ public class LiveFragment extends Fragment {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             currentUserEmail = user.getEmail() != null ? user.getEmail().toLowerCase().trim() : "";
-            currentUserName = user.getDisplayName() != null ? user.getDisplayName() : "Faculty";
+            currentUserName  = user.getDisplayName() != null ? user.getDisplayName() : "Faculty";
         }
         isFaculty = FacultyManager.isFaculty(currentUserEmail);
 
         recyclerView = view.findViewById(R.id.rv_live_sessions);
-        emptyState = view.findViewById(R.id.layout_empty_live);
+        emptyState   = view.findViewById(R.id.layout_empty_live);
         ExtendedFloatingActionButton fab = view.findViewById(R.id.fab_go_live);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -94,7 +94,7 @@ public class LiveFragment extends Fragment {
                                 sessions.add(s);
                             }
                         } catch (Exception ex) {
-                            // Malformed document — skip it
+                            // Malformed document — skip
                         }
                     }
                     adapter.notifyDataSetChanged();
@@ -106,7 +106,8 @@ public class LiveFragment extends Fragment {
 
     private void showGoLiveDialog() {
         for (LiveSession s : sessions) {
-            if (currentUserEmail.equals(s.getFacultyEmail() != null ? s.getFacultyEmail().toLowerCase() : "")) {
+            if (currentUserEmail.equals(s.getFacultyEmail() != null
+                    ? s.getFacultyEmail().toLowerCase() : "")) {
                 Toast.makeText(requireContext(),
                         "You already have an active session. End it before starting a new one.",
                         Toast.LENGTH_LONG).show();
@@ -114,14 +115,20 @@ public class LiveFragment extends Fragment {
             }
         }
 
-        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_go_live, null);
-        EditText etTitle = dialogView.findViewById(R.id.et_session_title);
-        RadioGroup rgPlatform = dialogView.findViewById(R.id.rg_platform);
-        EditText etYoutubeUrl = dialogView.findViewById(R.id.et_youtube_url);
-        View youtubeSection = dialogView.findViewById(R.id.layout_youtube_url);
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_go_live, null);
 
-        rgPlatform.setOnCheckedChangeListener((group, checkedId) ->
-            youtubeSection.setVisibility(checkedId == R.id.rb_youtube ? View.VISIBLE : View.GONE));
+        EditText  etTitle      = dialogView.findViewById(R.id.et_session_title);
+        RadioGroup rgPlatform  = dialogView.findViewById(R.id.rg_platform);
+        EditText  etYoutubeUrl = dialogView.findViewById(R.id.et_youtube_url);
+        EditText  etMeetUrl    = dialogView.findViewById(R.id.et_meet_url);
+        View      layoutYt     = dialogView.findViewById(R.id.layout_youtube_url);
+        View      layoutMeet   = dialogView.findViewById(R.id.layout_meet_url);
+
+        rgPlatform.setOnCheckedChangeListener((group, checkedId) -> {
+            layoutYt.setVisibility(checkedId == R.id.rb_youtube ? View.VISIBLE : View.GONE);
+            layoutMeet.setVisibility(checkedId == R.id.rb_google_meet ? View.VISIBLE : View.GONE);
+        });
 
         AlertDialog alert = new AlertDialog.Builder(requireContext())
                 .setTitle("Start Live Session")
@@ -137,7 +144,10 @@ public class LiveFragment extends Fragment {
                 etTitle.setError("Session title required");
                 return;
             }
-            if (rgPlatform.getCheckedRadioButtonId() == R.id.rb_youtube) {
+
+            int checked = rgPlatform.getCheckedRadioButtonId();
+
+            if (checked == R.id.rb_youtube) {
                 String ytUrl = etYoutubeUrl.getText().toString().trim();
                 if (TextUtils.isEmpty(ytUrl)) {
                     etYoutubeUrl.setError("YouTube URL required");
@@ -145,7 +155,18 @@ public class LiveFragment extends Fragment {
                 }
                 alert.dismiss();
                 startYoutubeSession(title, ytUrl);
+
+            } else if (checked == R.id.rb_google_meet) {
+                String meetUrl = etMeetUrl.getText().toString().trim();
+                if (TextUtils.isEmpty(meetUrl)) {
+                    etMeetUrl.setError("Google Meet link required");
+                    return;
+                }
+                alert.dismiss();
+                startGoogleMeetSession(title, meetUrl);
+
             } else {
+                // Jitsi (default)
                 alert.dismiss();
                 startJitsiSession(title);
             }
@@ -153,17 +174,10 @@ public class LiveFragment extends Fragment {
     }
 
     private void startJitsiSession(String title) {
-        String roomId = "LegalStaan-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        Map<String, Object> data = new HashMap<>();
-        data.put("facultyEmail", currentUserEmail);
-        data.put("facultyName", currentUserName);
-        data.put("title", title);
-        data.put("platform", "jitsi");
-        data.put("roomId", roomId);
-        data.put("youtubeUrl", "");
-        data.put("live", true);
-        data.put("startedAt", FieldValue.serverTimestamp());
-
+        String roomId = "LegalStaan-" +
+                UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        Map<String, Object> data = buildSessionData(currentUserEmail, currentUserName,
+                title, "jitsi", roomId, "", "");
         db.collection("live_sessions").add(data)
                 .addOnSuccessListener(ref -> {
                     Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
@@ -175,21 +189,14 @@ public class LiveFragment extends Fragment {
                     startActivity(intent);
                 })
                 .addOnFailureListener(ex ->
-                    Toast.makeText(requireContext(), "Could not start session: " + ex.getMessage(),
-                            Toast.LENGTH_SHORT).show());
+                        Toast.makeText(requireContext(),
+                                "Could not start session: " + ex.getMessage(),
+                                Toast.LENGTH_SHORT).show());
     }
 
     private void startYoutubeSession(String title, String youtubeUrl) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("facultyEmail", currentUserEmail);
-        data.put("facultyName", currentUserName);
-        data.put("title", title);
-        data.put("platform", "youtube");
-        data.put("roomId", "");
-        data.put("youtubeUrl", youtubeUrl);
-        data.put("live", true);
-        data.put("startedAt", FieldValue.serverTimestamp());
-
+        Map<String, Object> data = buildSessionData(currentUserEmail, currentUserName,
+                title, "youtube", "", youtubeUrl, "");
         db.collection("live_sessions").add(data)
                 .addOnSuccessListener(ref -> {
                     Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
@@ -201,8 +208,43 @@ public class LiveFragment extends Fragment {
                     startActivity(intent);
                 })
                 .addOnFailureListener(ex ->
-                    Toast.makeText(requireContext(), "Could not start session: " + ex.getMessage(),
-                            Toast.LENGTH_SHORT).show());
+                        Toast.makeText(requireContext(),
+                                "Could not start session: " + ex.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+    }
+
+    private void startGoogleMeetSession(String title, String meetUrl) {
+        Map<String, Object> data = buildSessionData(currentUserEmail, currentUserName,
+                title, "meet", "", "", meetUrl);
+        db.collection("live_sessions").add(data)
+                .addOnSuccessListener(ref -> {
+                    Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
+                    intent.putExtra("platform", "meet");
+                    intent.putExtra("meet_url", meetUrl);
+                    intent.putExtra("title", title);
+                    intent.putExtra("session_id", ref.getId());
+                    intent.putExtra("is_faculty", true);
+                    startActivity(intent);
+                })
+                .addOnFailureListener(ex ->
+                        Toast.makeText(requireContext(),
+                                "Could not start session: " + ex.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+    }
+
+    private Map<String, Object> buildSessionData(String email, String name, String title,
+            String platform, String roomId, String ytUrl, String meetUrl) {
+        Map<String, Object> d = new HashMap<>();
+        d.put("facultyEmail", email);
+        d.put("facultyName",  name);
+        d.put("title",        title);
+        d.put("platform",     platform);
+        d.put("roomId",       roomId);
+        d.put("youtubeUrl",   ytUrl);
+        d.put("meetUrl",      meetUrl);
+        d.put("live",         true);
+        d.put("startedAt",    FieldValue.serverTimestamp());
+        return d;
     }
 
     private void endSession(String sessionId) {
@@ -210,24 +252,27 @@ public class LiveFragment extends Fragment {
                 .setTitle("End Session")
                 .setMessage("End this live session? All viewers will be disconnected.")
                 .setPositiveButton("End Session", (d, w) ->
-                    db.collection("live_sessions").document(sessionId)
-                            .update("live", false)
-                            .addOnFailureListener(ex ->
-                                Toast.makeText(requireContext(), "Failed to end session",
-                                        Toast.LENGTH_SHORT).show()))
+                        db.collection("live_sessions").document(sessionId)
+                                .update("live", false)
+                                .addOnFailureListener(ex ->
+                                        Toast.makeText(requireContext(),
+                                                "Failed to end session",
+                                                Toast.LENGTH_SHORT).show()))
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
     private void joinSession(LiveSession session) {
         Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
-        intent.putExtra("platform", session.getPlatform());
-        intent.putExtra("room_id", session.getRoomId());
+        intent.putExtra("platform",    session.getPlatform());
+        intent.putExtra("room_id",     session.getRoomId());
         intent.putExtra("youtube_url", session.getYoutubeUrl());
-        intent.putExtra("title", session.getTitle());
-        intent.putExtra("session_id", session.getSessionId());
+        intent.putExtra("meet_url",    session.getMeetUrl());
+        intent.putExtra("title",       session.getTitle());
+        intent.putExtra("session_id",  session.getSessionId());
         boolean isOwner = isFaculty && currentUserEmail.equals(
-                session.getFacultyEmail() != null ? session.getFacultyEmail().toLowerCase() : "");
+                session.getFacultyEmail() != null
+                        ? session.getFacultyEmail().toLowerCase() : "");
         intent.putExtra("is_faculty", isOwner);
         startActivity(intent);
     }
@@ -237,6 +282,8 @@ public class LiveFragment extends Fragment {
         super.onDestroyView();
         if (listener != null) listener.remove();
     }
+
+    // ── Adapter ──────────────────────────────────────────────────────────────
 
     private class SessionAdapter extends RecyclerView.Adapter<SessionAdapter.VH> {
         private final List<LiveSession> list;
@@ -257,7 +304,11 @@ public class LiveFragment extends Fragment {
             LiveSession s = list.get(position);
             h.tvTitle.setText(s.getTitle() != null ? s.getTitle() : "Live Class");
             h.tvFaculty.setText("by " + (s.getFacultyName() != null ? s.getFacultyName() : "Faculty"));
-            h.tvPlatform.setText("jitsi".equals(s.getPlatform()) ? "Jitsi Meeting" : "YouTube Live");
+
+            String platform = s.getPlatform();
+            if ("youtube".equals(platform)) h.tvPlatform.setText("YouTube Live");
+            else if ("meet".equals(platform)) h.tvPlatform.setText("Google Meet");
+            else h.tvPlatform.setText("Jitsi Meeting");
 
             boolean isOwner = isFaculty && currentUserEmail.equals(
                     s.getFacultyEmail() != null ? s.getFacultyEmail().toLowerCase() : "");
@@ -272,15 +323,15 @@ public class LiveFragment extends Fragment {
 
         class VH extends RecyclerView.ViewHolder {
             TextView tvTitle, tvFaculty, tvPlatform;
-            Button btnJoin, btnEnd;
+            Button   btnJoin, btnEnd;
 
             VH(@NonNull View v) {
                 super(v);
-                tvTitle = v.findViewById(R.id.tv_session_title);
-                tvFaculty = v.findViewById(R.id.tv_session_faculty);
+                tvTitle    = v.findViewById(R.id.tv_session_title);
+                tvFaculty  = v.findViewById(R.id.tv_session_faculty);
                 tvPlatform = v.findViewById(R.id.tv_session_platform);
-                btnJoin = v.findViewById(R.id.btn_join_session);
-                btnEnd = v.findViewById(R.id.btn_end_session);
+                btnJoin    = v.findViewById(R.id.btn_join_session);
+                btnEnd     = v.findViewById(R.id.btn_end_session);
             }
         }
     }

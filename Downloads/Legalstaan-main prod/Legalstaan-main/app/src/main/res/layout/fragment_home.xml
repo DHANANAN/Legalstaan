@@ -10,12 +10,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Banner Image (loaded by Glide at runtime) -->
+        <!-- Banner — fitted to show full image without aggressive crop -->
         <ImageView
             android:id="@+id/iv_banner"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
+            android:layout_height="200dp"
+            android:scaleType="fitXY"
+            android:adjustViewBounds="true"
             android:contentDescription="@string/banner_desc"
             android:background="@color/primaryColor" />
 
@@ -29,7 +30,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -48,7 +49,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Ready for your legal journey?"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textColor="@color/colorSecondaryText" />
                 </LinearLayout>
 
@@ -69,8 +70,8 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"
                 app:cardBackgroundColor="#CC0000"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="14dp"
+                app:cardElevation="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -120,7 +121,7 @@
                         style="@style/Widget.MaterialComponents.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Watch"
+                        android:text="Join"
                         android:backgroundTint="#FFFFFF"
                         android:textColor="#CC0000"
                         android:textStyle="bold" />
@@ -129,32 +130,43 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Feature cards row -->
+            <!-- Section: Quick Navigation -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Navigation"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/colorHeadingText"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Row 1: Lectures + Mock Tests -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="10dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_recorded"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="16dp"
+                    android:layout_marginEnd="6dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="@color/colorCardStroke">
+                    app:strokeColor="@color/colorCardStroke"
+                    app:cardBackgroundColor="@color/colorSurface">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp"
+                        android:padding="18dp"
                         android:gravity="center">
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:src="@android:drawable/ic_media_play"
                             app:tint="@color/primaryColor" />
                         <TextView
@@ -163,6 +175,7 @@
                             android:text="Lectures"
                             android:layout_marginTop="8dp"
                             android:textStyle="bold"
+                            android:textSize="14sp"
                             android:textColor="@color/colorHeadingText" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -178,20 +191,21 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="16dp"
+                    android:layout_marginStart="6dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="@color/colorCardStroke">
+                    app:strokeColor="@color/colorCardStroke"
+                    app:cardBackgroundColor="@color/colorSurface">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp"
+                        android:padding="18dp"
                         android:gravity="center">
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:src="@android:drawable/ic_menu_edit"
                             app:tint="@color/accentColor" />
                         <TextView
@@ -200,6 +214,7 @@
                             android:text="Mock Tests"
                             android:layout_marginTop="8dp"
                             android:textStyle="bold"
+                            android:textSize="14sp"
                             android:textColor="@color/colorHeadingText" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -212,13 +227,141 @@
 
             </LinearLayout>
 
-            <!-- Connect section -->
+            <!-- Row 2: Live Classes + Free Materials -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="20dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_live_classes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/colorCardStroke"
+                    app:cardBackgroundColor="@color/colorSurface">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@android:drawable/presence_video_online"
+                            app:tint="#E53935" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Live Classes"
+                            android:layout_marginTop="8dp"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/colorHeadingText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Join Session"
+                            android:textSize="11sp"
+                            android:textColor="@color/colorSecondaryText" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_free_material"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/colorCardStroke"
+                    app:cardBackgroundColor="@color/colorSurface">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@android:drawable/ic_menu_agenda"
+                            app:tint="#43A047" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Free Materials"
+                            android:layout_marginTop="8dp"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="@color/colorHeadingText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PDFs &amp; Notes"
+                            android:textSize="11sp"
+                            android:textColor="@color/colorSecondaryText" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Section: About -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/colorCardStroke"
+                app:cardBackgroundColor="@color/colorSurface">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="About Legalstaan"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorHeadingText"
+                        android:layout_marginBottom="6dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Legalstaan is a free legal education platform dedicated to empowering law students across Africa and beyond. Access 100+ video lectures, live classes, mock tests, and study materials — all in one place."
+                        android:textSize="13sp"
+                        android:lineSpacingMultiplier="1.4"
+                        android:textColor="@color/colorBodyText" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorDivider"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Connect With Us (social links) — at bottom -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Connect With Us"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="12dp"
                 android:textColor="@color/colorHeadingText" />
 
@@ -227,12 +370,12 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="20dp">
 
                 <ImageButton
                     android:id="@+id/iv_youtube"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_margin="8dp"
                     android:background="@drawable/circle_avatar_bg"
                     android:src="@android:drawable/ic_media_play"
@@ -241,8 +384,8 @@
 
                 <ImageButton
                     android:id="@+id/iv_whatsapp"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_margin="8dp"
                     android:background="@drawable/circle_avatar_bg"
                     android:src="@android:drawable/stat_sys_phone_call"
@@ -251,8 +394,8 @@
 
                 <ImageButton
                     android:id="@+id/iv_instagram"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_margin="8dp"
                     android:background="@drawable/circle_avatar_bg"
                     android:src="@android:drawable/ic_menu_camera"
@@ -261,8 +404,8 @@
 
                 <ImageButton
                     android:id="@+id/iv_website"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:layout_margin="8dp"
                     android:background="@drawable/circle_avatar_bg"
                     android:src="@android:drawable/ic_menu_info_details"
@@ -271,16 +414,30 @@
 
             </LinearLayout>
 
-            <!-- Footer -->
+            <!-- Footer: MIT License + Copyright — very last -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorDivider"
+                android:layout_marginBottom="12dp" />
+
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
                 android:gravity="center"
-                android:text="© 2024 Legalstaan. All rights reserved.\nMIT License"
+                android:text="© 2024 Legalstaan. All rights reserved."
                 android:textSize="11sp"
                 android:textColor="@color/colorSecondaryText"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Released under the MIT License"
+                android:textSize="10sp"
+                android:textColor="@color/colorSecondaryText"
+                android:layout_marginBottom="24dp" />
 
         </LinearLayout>
     </LinearLayout>

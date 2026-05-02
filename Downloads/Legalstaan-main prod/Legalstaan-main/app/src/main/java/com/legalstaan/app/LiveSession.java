@@ -7,9 +7,10 @@ public class LiveSession {
     private String facultyEmail;
     private String facultyName;
     private String title;
-    private String platform; // "jitsi" or "youtube"
+    private String platform; // "jitsi", "youtube", or "meet"
     private String roomId;
     private String youtubeUrl;
+    private String meetUrl;
     private boolean live;
     private Timestamp startedAt;
 
@@ -29,6 +30,8 @@ public class LiveSession {
     public void setRoomId(String v) { this.roomId = v; }
     public String getYoutubeUrl() { return youtubeUrl; }
     public void setYoutubeUrl(String v) { this.youtubeUrl = v; }
+    public String getMeetUrl() { return meetUrl; }
+    public void setMeetUrl(String v) { this.meetUrl = v; }
     public boolean isLive() { return live; }
     public void setLive(boolean v) { this.live = v; }
     public Timestamp getStartedAt() { return startedAt; }

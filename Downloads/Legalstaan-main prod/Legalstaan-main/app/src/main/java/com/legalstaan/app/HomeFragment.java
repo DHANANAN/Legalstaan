@@ -38,11 +38,11 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Load banner — fitXY to show the full image cleanly
         Glide.with(this)
                 .load("https://i.ibb.co/fz0BRgQG/GQ4-Ul-NMW.jpg")
                 .placeholder(R.drawable.banner)
                 .error(R.drawable.banner)
-                .centerCrop()
                 .into((ImageView) view.findViewById(R.id.iv_banner));
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -61,11 +61,15 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.btn_watch_live).setOnClickListener(v -> joinCurrentSession());
         cardLive.setOnClickListener(v -> joinCurrentSession());
 
-        // Navigation cards
+        // 4 navigation cards
         view.findViewById(R.id.card_recorded).setOnClickListener(
                 v -> switchToTab(R.id.nav_courses));
         view.findViewById(R.id.card_test).setOnClickListener(
                 v -> startActivity(new Intent(requireActivity(), QuizActivity.class)));
+        view.findViewById(R.id.card_live_classes).setOnClickListener(
+                v -> switchToTab(R.id.nav_live));
+        view.findViewById(R.id.card_free_material).setOnClickListener(
+                v -> openFreeMaterials());
 
         // Social links
         view.findViewById(R.id.iv_youtube).setOnClickListener(
@@ -78,6 +82,14 @@ public class HomeFragment extends Fragment {
                 v -> openUrl("https://legalstaan.com/"));
 
         listenForLiveSessions();
+    }
+
+    private void openFreeMaterials() {
+        Intent intent = new Intent(requireActivity(), SubjectVideosActivity.class);
+        intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_ID, "__study_materials__");
+        intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_TITLE, "Free Study Materials");
+        intent.putExtra(SubjectVideosActivity.EXTRA_IS_STUDY_MATERIAL, true);
+        startActivity(intent);
     }
 
     private void listenForLiveSessions() {
@@ -117,12 +129,13 @@ public class HomeFragment extends Fragment {
                         ? currentSession.getFacultyEmail().toLowerCase() : "");
 
         Intent intent = new Intent(requireContext(), LiveStreamActivity.class);
-        intent.putExtra("platform", currentSession.getPlatform());
-        intent.putExtra("room_id", currentSession.getRoomId());
+        intent.putExtra("platform",    currentSession.getPlatform());
+        intent.putExtra("room_id",     currentSession.getRoomId());
         intent.putExtra("youtube_url", currentSession.getYoutubeUrl());
-        intent.putExtra("title", currentSession.getTitle());
-        intent.putExtra("session_id", currentSession.getSessionId());
-        intent.putExtra("is_faculty", isOwner);
+        intent.putExtra("meet_url",    currentSession.getMeetUrl());
+        intent.putExtra("title",       currentSession.getTitle());
+        intent.putExtra("session_id",  currentSession.getSessionId());
+        intent.putExtra("is_faculty",  isOwner);
         startActivity(intent);
     }
 

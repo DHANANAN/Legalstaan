@@ -1,6 +1,7 @@
 package com.legalstaan.app;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -11,6 +12,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONArray;
@@ -22,10 +26,12 @@ import java.util.List;
 
 public class SubjectVideosActivity extends AppCompatActivity {
 
-    public static final String EXTRA_SUBJECT_ID    = "subject_id";
-    public static final String EXTRA_SUBJECT_TITLE = "subject_title";
+    public static final String EXTRA_SUBJECT_ID       = "subject_id";
+    public static final String EXTRA_SUBJECT_TITLE    = "subject_title";
+    public static final String EXTRA_IS_STUDY_MATERIAL = "is_study_material";
 
     private final List<VideoItem> videoItems = new ArrayList<>();
+    private boolean isStudyMaterial = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
 
         String subjectId    = getIntent().getStringExtra(EXTRA_SUBJECT_ID);
         String subjectTitle = getIntent().getStringExtra(EXTRA_SUBJECT_TITLE);
+        isStudyMaterial     = getIntent().getBooleanExtra(EXTRA_IS_STUDY_MATERIAL, false);
 
         Toolbar toolbar = findViewById(R.id.toolbar_subject);
         setSupportActionBar(toolbar);
@@ -42,28 +49,55 @@ public class SubjectVideosActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(subjectTitle != null ? subjectTitle : "Lectures");
         }
 
-        loadVideos(subjectId);
+        if ("__study_materials__".equals(subjectId)) {
+            // Show all study-material subjects as a flat list
+            loadAllStudyMaterials();
+        } else {
+            loadVideosForSubject(subjectId);
+        }
 
         RecyclerView rv = findViewById(R.id.rv_subject_videos);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        rv.setAdapter(new VideoListAdapter(videoItems, item -> {
-            Intent intent = new Intent(this, VideoActivity.class);
-            intent.putExtra(VideoActivity.EXTRA_FILE_ID, item.fileId);
-            intent.putExtra(VideoActivity.EXTRA_TITLE, item.title);
-            startActivity(intent);
-        }));
+        rv.setAdapter(new VideoListAdapter(videoItems, this::openItem));
     }
 
-    private void loadVideos(String subjectId) {
+    private void openItem(VideoItem item) {
+        if (isStudyMaterial) {
+            // Open PDF / study file in the Drive full viewer via Chrome Custom Tab
+            openInCustomTab("https://drive.google.com/file/d/" + item.fileId + "/view");
+        } else {
+            Intent intent = new Intent(this, VideoActivity.class);
+            intent.putExtra(VideoActivity.EXTRA_FILE_ID, item.fileId);
+            intent.putExtra(VideoActivity.EXTRA_TITLE,   item.title);
+            startActivity(intent);
+        }
+    }
+
+    private void openInCustomTab(String url) {
+        try {
+            int color = ContextCompat.getColor(this, R.color.primaryColor);
+            CustomTabColorSchemeParams params = new CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(color).build();
+            new CustomTabsIntent.Builder()
+                    .setDefaultColorSchemeParams(params)
+                    .setShowTitle(true)
+                    .build()
+                    .launchUrl(this, Uri.parse(url));
+        } catch (Exception e) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        }
+    }
+
+    private void loadVideosForSubject(String subjectId) {
         if (subjectId == null) return;
         try {
-            InputStream is = getAssets().open("config.json");
-            byte[] buf = new byte[is.available()];
+            InputStream is  = getAssets().open("config.json");
+            byte[]      buf = new byte[is.available()];
             is.read(buf);
             is.close();
 
-            JSONObject root = new JSONObject(new String(buf, StandardCharsets.UTF_8));
-            JSONArray subjects = root.getJSONArray("subjects");
+            JSONObject root     = new JSONObject(new String(buf, StandardCharsets.UTF_8));
+            JSONArray  subjects = root.getJSONArray("subjects");
             for (int i = 0; i < subjects.length(); i++) {
                 JSONObject subj = subjects.getJSONObject(i);
                 if (subj.getString("id").equals(subjectId)) {
@@ -72,11 +106,40 @@ public class SubjectVideosActivity extends AppCompatActivity {
                         JSONObject v = videos.getJSONObject(j);
                         videoItems.add(new VideoItem(v.getString("title"), v.getString("file_id")));
                     }
+                    // If this subject itself is study material, flip the open behaviour
+                    if ("study_material".equals(subj.optString("category", "lecture"))) {
+                        isStudyMaterial = true;
+                    }
                     break;
                 }
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Could not load videos.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Could not load content.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void loadAllStudyMaterials() {
+        // Aggregate items from every study_material subject into one flat list
+        try {
+            InputStream is  = getAssets().open("config.json");
+            byte[]      buf = new byte[is.available()];
+            is.read(buf);
+            is.close();
+
+            JSONObject root     = new JSONObject(new String(buf, StandardCharsets.UTF_8));
+            JSONArray  subjects = root.getJSONArray("subjects");
+            for (int i = 0; i < subjects.length(); i++) {
+                JSONObject subj = subjects.getJSONObject(i);
+                if (!"study_material".equals(subj.optString("category", "lecture"))) continue;
+                JSONArray videos = subj.getJSONArray("videos");
+                for (int j = 0; j < videos.length(); j++) {
+                    JSONObject v = videos.getJSONObject(j);
+                    videoItems.add(new VideoItem(v.getString("title"), v.getString("file_id")));
+                }
+            }
+            isStudyMaterial = true;
+        } catch (Exception e) {
+            Toast.makeText(this, "Could not load materials.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -95,7 +158,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
 
     static class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.VH> {
 
-        private final List<VideoItem> items;
+        private final List<VideoItem>    items;
         private final OnVideoClickListener listener;
 
         VideoListAdapter(List<VideoItem> items, OnVideoClickListener listener) {

@@ -1,9 +1,12 @@
 package com.legalstaan.app;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -30,21 +34,26 @@ import java.io.OutputStream;
 
 public class ProfileFragment extends Fragment {
 
-    private static final String PREFS = "legalstaan_prefs";
+    private static final String PREFS   = "legalstaan_prefs";
     private static final String KEY_PIC = "profile_pic_path";
 
     private ImageView ivAvatar;
-    private ActivityResultLauncher<String> imagePicker;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        imagePicker = registerForActivityResult(
-                new ActivityResultContracts.GetContent(),
-                uri -> {
-                    if (uri != null) saveAndLoadProfilePic(uri);
-                });
-    }
+    private final ActivityResultLauncher<String> imagePicker =
+            registerForActivityResult(new ActivityResultContracts.GetContent(),
+                    uri -> { if (uri != null) saveAndLoadProfilePic(uri); });
+
+    private final ActivityResultLauncher<String> permissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        if (granted) {
+                            imagePicker.launch("image/*");
+                        } else {
+                            Toast.makeText(requireContext(),
+                                    "Gallery permission needed to change photo",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
     @Nullable
     @Override
@@ -70,9 +79,9 @@ public class ProfileFragment extends Fragment {
             }
         }
 
-        // Tap avatar to change photo
-        ivAvatar.setOnClickListener(v -> imagePicker.launch("image/*"));
-        view.findViewById(R.id.tv_change_photo).setOnClickListener(v -> imagePicker.launch("image/*"));
+        View.OnClickListener pickPhoto = v -> requestPhotoAndPick();
+        ivAvatar.setOnClickListener(pickPhoto);
+        view.findViewById(R.id.tv_change_photo).setOnClickListener(pickPhoto);
 
         // User info
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -95,39 +104,86 @@ public class ProfileFragment extends Fragment {
             });
         }
 
-        // Row labels
         setRowLabel(view, R.id.row_certificates, "Course Certificates");
         setRowLabel(view, R.id.row_downloads,    "Offline Downloads");
-        setRowLabel(view, R.id.row_free_material,"Free Material");
+        setRowLabel(view, R.id.row_free_material,"Free Study Materials");
         setRowLabel(view, R.id.row_settings,     "Settings");
         setRowLabel(view, R.id.row_how_to,       "How to Use the App");
         setRowLabel(view, R.id.row_privacy,      "Privacy Policy");
         setRowLabel(view, R.id.row_sign_out,     "Sign Out");
 
-        // Row click handlers
         view.findViewById(R.id.row_certificates).setOnClickListener(v ->
-                showInfo("Course Certificates", "Certificates are awarded on completing a full course. Stay consistent with your lectures to earn yours!"));
+                showInfo("Course Certificates",
+                        "Certificates are awarded on completing a full course. Stay consistent!"));
 
         view.findViewById(R.id.row_downloads).setOnClickListener(v ->
-                showInfo("Offline Downloads", "Offline download support is coming in the next update. Make sure you have a good internet connection for now."));
+                showInfo("Offline Downloads",
+                        "Offline download support is coming in the next update."));
 
-        view.findViewById(R.id.row_free_material).setOnClickListener(v ->
-                openUrl("https://legalstaan.com/"));
+        view.findViewById(R.id.row_free_material).setOnClickListener(v -> {
+            Intent intent = new Intent(requireActivity(), SubjectVideosActivity.class);
+            intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_ID, "__study_materials__");
+            intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_TITLE, "Free Study Materials");
+            intent.putExtra(SubjectVideosActivity.EXTRA_IS_STUDY_MATERIAL, true);
+            startActivity(intent);
+        });
 
-        view.findViewById(R.id.row_settings).setOnClickListener(v -> showSettings(view));
-
+        view.findViewById(R.id.row_settings).setOnClickListener(v -> showSettings());
         view.findViewById(R.id.row_how_to).setOnClickListener(v -> showHowToUse());
-
         view.findViewById(R.id.row_privacy).setOnClickListener(v ->
                 openUrl("https://legalstaan.com/"));
-
         view.findViewById(R.id.row_sign_out).setOnClickListener(v -> signOut());
     }
 
-    private void showSettings(View root) {
+    /** Handles runtime permission before opening gallery. */
+    private void requestPhotoAndPick() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+: READ_MEDIA_IMAGES
+            if (ContextCompat.checkSelfPermission(requireContext(),
+                    Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+                imagePicker.launch("image/*");
+            } else {
+                permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+            }
+        } else {
+            // Android 6–12: READ_EXTERNAL_STORAGE (or not needed for GetContent)
+            imagePicker.launch("image/*");
+        }
+    }
+
+    private void saveAndLoadProfilePic(Uri uri) {
+        try {
+            InputStream in = requireContext().getContentResolver().openInputStream(uri);
+            if (in == null) {
+                Toast.makeText(requireContext(), "Could not read image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            File outFile = new File(requireContext().getFilesDir(), "profile_pic.jpg");
+            try (OutputStream out = new FileOutputStream(outFile)) {
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
+            }
+            in.close();
+
+            requireContext().getSharedPreferences(PREFS, 0)
+                    .edit().putString(KEY_PIC, outFile.getAbsolutePath()).apply();
+
+            Glide.with(this).load(outFile).skipMemoryCache(true).circleCrop().into(ivAvatar);
+            Toast.makeText(requireContext(), "Profile photo updated!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Could not set photo: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showSettings() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Settings")
-                .setMessage("• Dark Mode: use the toggle in your profile\n\n• Notifications: coming soon\n\n• App Version: 1.2\n\n• Contact: contactlegalstaan@gmail.com")
+                .setMessage("• Dark Mode: use the toggle above\n\n"
+                        + "• App Version: 1.4.0\n\n"
+                        + "• Contact: contactlegalstaan@gmail.com\n\n"
+                        + "• Notifications: coming soon")
                 .setPositiveButton("OK", null)
                 .show();
     }
@@ -136,51 +192,29 @@ public class ProfileFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("How to Use Legalstaan")
                 .setMessage(
-                        "1. Home — Quick access to all features and social links.\n\n" +
-                        "2. Courses — Browse 10 subjects, 105 video lectures. Tap any subject to see its lectures.\n\n" +
-                        "3. Community — Chat with Rutu AI for app guidance and legal topic help.\n\n" +
-                        "4. Profile — Update your picture, toggle dark mode, and access settings.\n\n" +
-                        "5. Quiz — Tap 'Test Series' on the home screen to take practice MCQs.\n\n" +
-                        "Tip: Use dark mode for comfortable night-time studying!")
+                        "1. Home — Quick access to Lectures, Mock Tests, Live Classes, and Free Materials.\n\n"
+                        + "2. Courses — Browse subjects and 100+ video lectures.\n\n"
+                        + "3. Live — Join or start live classes (faculty only for Go Live).\n\n"
+                        + "4. Community — Chat with Rutu AI. Toggle AI+Web for smarter answers.\n\n"
+                        + "5. Profile — Change photo, toggle dark mode, access settings.\n\n"
+                        + "Tip: Videos support fullscreen in landscape mode!")
                 .setPositiveButton("Got it!", null)
                 .show();
     }
 
     private void showInfo(String title, String msg) {
         new AlertDialog.Builder(requireContext())
-                .setTitle(title)
-                .setMessage(msg)
-                .setPositiveButton("OK", null)
-                .show();
+                .setTitle(title).setMessage(msg).setPositiveButton("OK", null).show();
     }
 
     private void openUrl(String url) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
-    private void saveAndLoadProfilePic(Uri uri) {
-        try {
-            InputStream in = requireContext().getContentResolver().openInputStream(uri);
-            File outFile = new File(requireContext().getFilesDir(), "profile_pic.jpg");
-            OutputStream out = new FileOutputStream(outFile);
-            byte[] buf = new byte[4096];
-            int len;
-            while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
-            in.close();
-            out.close();
-
-            requireContext().getSharedPreferences(PREFS, 0)
-                    .edit().putString(KEY_PIC, outFile.getAbsolutePath()).apply();
-
-            Glide.with(this).load(outFile).circleCrop().into(ivAvatar);
-        } catch (Exception e) {
-            Toast.makeText(requireContext(), "Could not set photo", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void signOut() {
         FirebaseAuth.getInstance().signOut();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(
+                GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();

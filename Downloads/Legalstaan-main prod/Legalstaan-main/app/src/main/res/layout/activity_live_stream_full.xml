@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Root FrameLayout lets the fullscreen container overlay everything -->
+<!-- Root FrameLayout so fullscreen container can overlay the toolbar -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Normal player layout -->
+    <!-- Normal stream layout -->
     <LinearLayout
-        android:id="@+id/layout_normal"
+        android:id="@+id/layout_live_normal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_video"
+            android:id="@+id/toolbar_live"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/primaryColor"
@@ -22,31 +22,17 @@
             app:titleTextColor="@color/white"
             app:navigationIconTint="@color/white" />
 
-        <FrameLayout
+        <WebView
+            android:id="@+id/webview_live"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <WebView
-                android:id="@+id/web_view_player"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:hardwareAccelerated="true" />
-
-            <ProgressBar
-                android:id="@+id/video_progress"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_gravity="center"
-                android:indeterminateTint="@color/accentColor" />
-
-        </FrameLayout>
+            android:layout_height="match_parent"
+            android:hardwareAccelerated="true" />
 
     </LinearLayout>
 
-    <!-- Fullscreen container — shown when Drive video player goes fullscreen in landscape -->
+    <!-- Fullscreen overlay for landscape video mode -->
     <FrameLayout
-        android:id="@+id/fullscreen_container"
+        android:id="@+id/fullscreen_live_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000"
