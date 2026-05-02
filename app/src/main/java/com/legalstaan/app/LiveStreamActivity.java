@@ -64,14 +64,14 @@ public class LiveStreamActivity extends AppCompatActivity {
         pendingIsFaculty = getIntent().getBooleanExtra("is_faculty", false);
 
         if ("meet".equals(pendingPlatform)) {
-            // Reverted to WebView instead of Custom Tab to keep in-app feel.
-            // We spoof the User-Agent later to prevent Google Auth 403 error.
+            // Google Meet blocks WebViews with "browser not secure" — use Chrome Custom Tab
+            // which is a real Chrome instance (no domain bar issue since Meet is full-screen)
             if (!permissionsGranted()) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
                         REQ_PERMISSIONS);
             } else {
-                launchStream();
+                launchMeetInChrome();
             }
             return;
         }
@@ -90,7 +90,20 @@ public class LiveStreamActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_PERMISSIONS) launchStream();
+        if (requestCode == REQ_PERMISSIONS) {
+            if ("meet".equals(pendingPlatform)) {
+                launchMeetInChrome();
+            } else {
+                launchStream();
+            }
+        }
+    }
+
+    /** Google Meet MUST run in Chrome Custom Tab — WebView shows "browser not secure" */
+    private void launchMeetInChrome() {
+        String url = pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com";
+        openInCustomTab(url);
+        finish(); // close this activity since Meet is now in Chrome
     }
 
     private boolean permissionsGranted() {
