@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1055408756496",
+    "project_id": "legalstaan",
+    "storage_bucket": "legalstaan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055408756496:android:ee8f39b1305e48f60fb795",
+        "android_client_info": {
+          "package_name": "com.legalstaan.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5ik_V30tAhvEEuS7aXPkGrOCZnrxzNck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
