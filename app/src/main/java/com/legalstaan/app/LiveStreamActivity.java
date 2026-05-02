@@ -55,9 +55,15 @@ public class LiveStreamActivity extends AppCompatActivity {
         pendingIsFaculty = getIntent().getBooleanExtra("is_faculty", false);
 
         if ("meet".equals(pendingPlatform)) {
-            // Google Meet requires Google auth → open in Custom Tab (user stays signed in)
-            openInCustomTab(pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com");
-            finish();
+            // Reverted to WebView instead of Custom Tab to keep in-app feel.
+            // We spoof the User-Agent later to prevent Google Auth 403 error.
+            if (!permissionsGranted()) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
+                        REQ_PERMISSIONS);
+            } else {
+                launchStream();
+            }
             return;
         }
 
@@ -105,6 +111,8 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         if ("jitsi".equals(pendingPlatform)) {
             loadJitsi();
+        } else if ("meet".equals(pendingPlatform)) {
+            webView.loadUrl(pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com");
         } else {
             loadYoutube();
         }
@@ -123,6 +131,10 @@ public class LiveStreamActivity extends AppCompatActivity {
         ws.setAllowFileAccess(true);
         // WebRTC getUserMedia support
         ws.setDatabaseEnabled(true);
+        
+        // Spoof user agent to bypass Google's "disallowed_useragent" 403 error for OAuth
+        String userAgent = ws.getUserAgentString();
+        ws.setUserAgentString(userAgent.replace("; wv", ""));
 
         webView.setWebViewClient(new WebViewClient());
 

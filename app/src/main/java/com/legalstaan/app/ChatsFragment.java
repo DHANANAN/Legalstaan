@@ -31,7 +31,7 @@ public class ChatsFragment extends Fragment {
 
     private static final String GEMINI_KEY = "AIzaSyCF2XJu2E68Tiuifh6sGBnsQMIrZSNPxF0";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_KEY;
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
 
     private static final String SYSTEM_PROMPT =
             "You are Rutu AI, the intelligent legal-education assistant for Legalstaan — " +
@@ -128,12 +128,14 @@ public class ChatsFragment extends Fragment {
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(30000);
 
+                conn.setRequestProperty("X-goog-api-key", GEMINI_KEY);
+
                 String escapedSystem = escapeJson(SYSTEM_PROMPT);
                 String escapedMsg    = escapeJson(userMessage);
+                String fullMessage   = "System Instruction: " + escapedSystem + "\\n\\nUser Question: " + escapedMsg;
 
                 String body = "{" +
-                        "\"system_instruction\":{\"parts\":[{\"text\":\"" + escapedSystem + "\"}]}," +
-                        "\"contents\":[{\"parts\":[{\"text\":\"" + escapedMsg + "\"}]}]" +
+                        "\"contents\":[{\"parts\":[{\"text\":\"" + fullMessage + "\"}]}]" +
                         "}";
 
                 byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);

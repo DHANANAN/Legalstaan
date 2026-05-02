@@ -11,8 +11,8 @@ android {
         applicationId "com.legalstaan.app"
         minSdk 23
         targetSdk 35
-        versionCode 6
-        versionName "1.4.0"
+        versionCode 15
+        versionName "1.15.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
