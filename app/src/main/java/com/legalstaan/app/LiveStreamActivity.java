@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -22,10 +23,18 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
+import java.util.Collections;
 
 public class LiveStreamActivity extends AppCompatActivity {
 
     private static final int REQ_PERMISSIONS = 100;
+
+    // Full desktop Chrome UA — bypasses Google's "disallowed_useragent" 403 for OAuth
+    private static final String DESKTOP_UA =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                    + "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     private WebView webView;
     private FrameLayout fullscreenContainer;
@@ -131,12 +140,29 @@ public class LiveStreamActivity extends AppCompatActivity {
         ws.setAllowFileAccess(true);
         // WebRTC getUserMedia support
         ws.setDatabaseEnabled(true);
-        
-        // Spoof user agent to bypass Google's "disallowed_useragent" 403 error for OAuth
-        String userAgent = ws.getUserAgentString();
-        ws.setUserAgentString(userAgent.replace("; wv", ""));
 
-        webView.setWebViewClient(new WebViewClient());
+        // Full desktop Chrome UA — Google checks both the UA string AND the
+        // X-Requested-With header to detect WebViews. Just removing "; wv" is
+        // no longer enough; we need a complete desktop UA.
+        ws.setUserAgentString(DESKTOP_UA);
+
+        // Strip X-Requested-With header — the other signal Google uses to detect WebViews
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
+            WebSettingsCompat.setRequestedWithHeaderOriginAllowList(ws, Collections.emptySet());
+        }
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                // Keep Google OAuth and Meet navigation inside the WebView
+                if (url.contains("google.com") || url.contains("gstatic.com")
+                        || url.contains("youtube.com") || url.contains("jitsi")) {
+                    return false;
+                }
+                return false;
+            }
+        });
 
         webView.setWebChromeClient(new WebChromeClient() {
 

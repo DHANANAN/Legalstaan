@@ -31,7 +31,7 @@ public class ChatsFragment extends Fragment {
 
     private static final String GEMINI_KEY = "AIzaSyCF2XJu2E68Tiuifh6sGBnsQMIrZSNPxF0";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_KEY;
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY;
 
     private static final String SYSTEM_PROMPT =
             "You are an intelligent educational assistant. " +
@@ -136,7 +136,7 @@ public class ChatsFragment extends Fragment {
                         String line;
                         while ((line = br.readLine()) != null) sb.append(line);
                     }
-                    JSONObject resp       = new JSONObject(sb.toString());
+                    JSONObject resp = new JSONObject(sb.toString());
                     String aiText = resp.getJSONArray("candidates")
                             .getJSONObject(0)
                             .getJSONObject("content")
@@ -151,7 +151,14 @@ public class ChatsFragment extends Fragment {
                         }
                     });
                 } else {
-                    throw new Exception("HTTP " + code);
+                    // Read error body for better diagnostics
+                    StringBuilder errSb = new StringBuilder();
+                    try (BufferedReader br = new BufferedReader(
+                            new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = br.readLine()) != null) errSb.append(line);
+                    } catch (Exception ignored) {}
+                    throw new Exception("HTTP " + code + ": " + errSb.toString());
                 }
                 conn.disconnect();
 
