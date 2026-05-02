@@ -31,11 +31,11 @@ public class ChatsFragment extends Fragment {
 
     private static final String GEMINI_KEY = "AIzaSyCF2XJu2E68Tiuifh6sGBnsQMIrZSNPxF0";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_KEY;
 
     private static final String SYSTEM_PROMPT =
             "You are Rutu AI, the intelligent legal-education assistant for Legalstaan — " +
-            "a free legal education platform for law students, especially across Africa and South Asia. " +
+            "a free legal education platform for law students. " +
             "You have deep knowledge about: " +
             "1) The Legalstaan app: 8 subjects with 100+ video lectures including Trademark Law (17 lectures), " +
             "Patent Law (35 lectures), Copyright Law (10 lectures), Design Act 2000 (8 lectures), " +
@@ -46,9 +46,7 @@ public class ChatsFragment extends Fragment {
             "2) Legal topics: Constitutional Law, Criminal Law (IPC/BNS), Civil Procedure (CPC), " +
             "Contract Law, Torts, IPR (Patent, Trademark, Copyright, Design, Plant Variety), " +
             "Administrative Law, International Law and treaties. " +
-            "3) African legal context: customary law, ECOWAS, African Union law, comparative law, " +
-            "legal aid systems, access to justice challenges in Africa. " +
-            "4) Law school preparation, moot court, legal research, case analysis, exam strategy. " +
+            "3) Law school preparation, moot court, legal research, case analysis, exam strategy. " +
             "Contact: contactlegalstaan@gmail.com | Instagram: @legalstaan | YouTube: @legalstaanofficial. " +
             "Be helpful, warm, concise, and encouraging. When giving legal info, add a brief disclaimer " +
             "that it is for educational purposes only.";
@@ -128,14 +126,12 @@ public class ChatsFragment extends Fragment {
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(30000);
 
-                conn.setRequestProperty("X-goog-api-key", GEMINI_KEY);
-
                 String escapedSystem = escapeJson(SYSTEM_PROMPT);
                 String escapedMsg    = escapeJson(userMessage);
-                String fullMessage   = "System Instruction: " + escapedSystem + "\\n\\nUser Question: " + escapedMsg;
 
                 String body = "{" +
-                        "\"contents\":[{\"parts\":[{\"text\":\"" + fullMessage + "\"}]}]" +
+                        "\"system_instruction\":{\"parts\":[{\"text\":\"" + escapedSystem + "\"}]}," +
+                        "\"contents\":[{\"parts\":[{\"text\":\"" + escapedMsg + "\"}]}]" +
                         "}";
 
                 byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
@@ -175,8 +171,9 @@ public class ChatsFragment extends Fragment {
                 mainHandler.post(() -> {
                     if (isAdded()) {
                         tvStatus.setText("Gemini mode · AI+Web active");
+                        String errorDetails = e.getMessage() != null ? e.getMessage() : e.toString();
                         addAiMessage(getLocalResponse(userMessage) +
-                                "\n\n(Note: Couldn't reach Gemini — using local knowledge.)");
+                                "\n\n(Note: Couldn't reach Gemini — using local knowledge. Error: " + errorDetails + ")");
                     }
                 });
             }
@@ -204,10 +201,10 @@ public class ChatsFragment extends Fragment {
             return "Hello! Great to have you here 😊 Ask me about Legalstaan courses, legal topics, or anything to help your studies!";
 
         if (has(q, "who are you", "what are you", "rutu", "introduce yourself"))
-            return "I'm Rutu AI, your Legalstaan legal-education assistant!\n\nI can help with:\n• Navigating the app (courses, live classes, mock tests)\n• Legal concepts (IPR, Constitutional, Criminal Law, etc.)\n• African and international law\n• Study tips & exam prep\n\nToggle \"AI+Web\" for Gemini-powered deep answers!";
+            return "I'm Rutu AI, your Legalstaan legal-education assistant!\n\nI can help with:\n• Navigating the app (courses, live classes, mock tests)\n• Legal concepts (IPR, Constitutional, Criminal Law, etc.)\n• International law\n• Study tips & exam prep\n\nToggle \"AI+Web\" for Gemini-powered deep answers!";
 
         if (has(q, "what can you", "help me with", "capabilities", "features"))
-            return "I can help you with:\n• App navigation and features\n• IPR topics: Trademark, Patent, Copyright, Design, Plant Variety\n• Constitutional Law, Criminal Law (IPC/BNS), Administrative Law\n• CPC, Contract, Torts\n• African & international legal frameworks\n• Exam strategy and study tips\n\nFor deeper research, turn on AI+Web!";
+            return "I can help you with:\n• App navigation and features\n• IPR topics: Trademark, Patent, Copyright, Design, Plant Variety\n• Constitutional Law, Criminal Law (IPC/BNS), Administrative Law\n• CPC, Contract, Torts\n• International legal frameworks\n• Exam strategy and study tips\n\nFor deeper research, turn on AI+Web!";
 
         if (has(q, "trademark", "brand", "mark"))
             return "Trademark Law has 17 lectures on Legalstaan!\n\nKey topics:\n• Definition & types of marks\n• Registration process (TM-A, TM-O forms)\n• Passing off vs. infringement\n• Distinctiveness & absolute grounds for refusal\n• International registration (Madrid Protocol)\n\nGo to Courses → Trademark Law to start.";
@@ -236,8 +233,6 @@ public class ChatsFragment extends Fragment {
         if (has(q, "plant variety", "farmer", "pvp", "seed", "breeder"))
             return "Plant Variety & Farmers Rights Act:\n• Rights of plant breeders vs. farmers' traditional rights\n• UPOV Convention & India's sui generis system\n• Protection of existing varieties\n• Essential Deposit requirement\n\nAvailable in Courses!";
 
-        if (has(q, "africa", "african", "ecowas", "african union", "au law", "customary"))
-            return "African Legal Context:\n• African Union frameworks & ECOWAS Treaty\n• African Charter on Human & Peoples' Rights\n• Customary law systems and their interaction with statutory law\n• Access to justice challenges\n• Colonial legal heritage (common law & civil law countries)\n\nFor deep analysis, toggle AI+Web!";
 
         if (has(q, "ipc", "criminal", "bns", "section 302", "murder", "theft", "offence"))
             return "Criminal Law (IPC/BNS) fundamentals:\n• General exceptions: mistake, necessity, private defence\n• Attempt vs. abetment\n• Offences against the person (murder, culpable homicide)\n• Property offences (theft, extortion, dacoity)\n• BNS 2023 reforms and key changes from IPC\n\nCheck Courses for full lectures!";
