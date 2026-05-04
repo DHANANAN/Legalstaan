@@ -37,7 +37,10 @@ public class QuestionRunnerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_question_runner);
 
         String id = getIntent().getStringExtra(EXTRA_TEST_ID);
-        testSet = QuestionBank.byId(id);
+        // Slot-rotated IDs (e.g. "ipr_mixed_1_20260505-MORNING") aren't in the
+        // static bank — check the current rotation first, then fall back.
+        testSet = TestRotation.bySlotId(id);
+        if (testSet == null) testSet = QuestionBank.byId(id);
         if (testSet == null) {
             Toast.makeText(this, "Test set not found", Toast.LENGTH_SHORT).show();
             finish();

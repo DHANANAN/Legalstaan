@@ -22,6 +22,8 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.signature.ObjectKey;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -69,13 +71,26 @@ public class ProfileFragment extends Fragment {
 
         ivAvatar = view.findViewById(R.id.iv_avatar);
 
-        // Load saved profile pic
+        // Load saved profile pic. Two long-standing bugs being fixed here:
+        //   1) Glide's disk + memory cache kept serving the OLD jpg even after
+        //      a new pick because we always write to the same path.
+        //   2) The ImageView had android:tint set, which stayed applied on top
+        //      of the photo and made it look like the upload "didn't take".
         SharedPreferences prefs = requireContext().getSharedPreferences(PREFS, 0);
         String savedPath = prefs.getString(KEY_PIC, null);
         if (savedPath != null) {
             File f = new File(savedPath);
             if (f.exists()) {
-                Glide.with(this).load(f).circleCrop().into(ivAvatar);
+                ivAvatar.setImageTintList(null);
+                ivAvatar.setColorFilter(null);
+                ivAvatar.setPadding(0, 0, 0, 0);
+                Glide.with(this)
+                        .load(f)
+                        .signature(new ObjectKey(f.lastModified()))
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .circleCrop()
+                        .into(ivAvatar);
             }
         }
 
@@ -113,12 +128,23 @@ public class ProfileFragment extends Fragment {
         setRowLabel(view, R.id.row_sign_out,     "Sign Out");
 
         view.findViewById(R.id.row_certificates).setOnClickListener(v ->
-                showInfo("Course Certificates",
-                        "Certificates are awarded on completing a full course. Stay consistent!"));
+                openInfo("Course Certificates",
+                        "Earn a certificate by completing a full course on Legalstaan.\n\n"
+                        + "How it works:\n"
+                        + "• Watch every lecture in a subject\n"
+                        + "• Take the related test set in the Question Bank\n"
+                        + "• Score 60% or above\n\n"
+                        + "Once you cross the bar, your certificate is generated and stored under "
+                        + "your profile. Email contactlegalstaan@gmail.com if you'd like a printable PDF."));
 
         view.findViewById(R.id.row_downloads).setOnClickListener(v ->
-                showInfo("Offline Downloads",
-                        "Offline download support is coming in the next update."));
+                openInfo("Offline Downloads",
+                        "Offline downloads are coming soon.\n\n"
+                        + "We're working on letting you save lectures and study material to your device "
+                        + "so you can study without an internet connection — perfect for travel or "
+                        + "low-connectivity areas.\n\n"
+                        + "In the meantime, the app caches the most recently watched videos for you "
+                        + "and the Drive folders sync in the background whenever you reopen a subject."));
 
         view.findViewById(R.id.row_free_material).setOnClickListener(v -> {
             Intent intent = new Intent(requireActivity(), SubjectVideosActivity.class);
@@ -169,7 +195,16 @@ public class ProfileFragment extends Fragment {
             requireContext().getSharedPreferences(PREFS, 0)
                     .edit().putString(KEY_PIC, outFile.getAbsolutePath()).apply();
 
-            Glide.with(this).load(outFile).skipMemoryCache(true).circleCrop().into(ivAvatar);
+            ivAvatar.setImageTintList(null);
+            ivAvatar.setColorFilter(null);
+            ivAvatar.setPadding(0, 0, 0, 0);
+            Glide.with(this)
+                    .load(outFile)
+                    .signature(new ObjectKey(outFile.lastModified()))
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .circleCrop()
+                    .into(ivAvatar);
             Toast.makeText(requireContext(), "Profile photo updated!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Could not set photo: " + e.getMessage(),
@@ -182,22 +217,31 @@ public class ProfileFragment extends Fragment {
     }
 
     private void showHowToUse() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("How to Use Legalstaan")
-                .setMessage(
-                        "1. Home — Quick access to Lectures, Mock Tests, Live Classes, and Free Materials.\n\n"
-                        + "2. Courses — Browse subjects and 100+ video lectures.\n\n"
-                        + "3. Live — Join or start live classes (faculty only for Go Live).\n\n"
-                        + "4. Community — Chat with Rutu AI. Toggle AI+Web for smarter answers.\n\n"
-                        + "5. Profile — Change photo, toggle dark mode, access settings.\n\n"
-                        + "Tip: Videos support fullscreen in landscape mode!")
-                .setPositiveButton("Got it!", null)
-                .show();
+        openInfo("How to Use Legalstaan",
+                "Welcome to Legalstaan — your free legal-education companion.\n\n"
+                + "1. Home\n"
+                + "Quick access to Lectures, Mock Tests, Live Classes, and Free Materials. "
+                + "When a faculty goes live, a red banner shows up here.\n\n"
+                + "2. Courses\n"
+                + "Browse every subject. Tap a subject to see its Lectures and Material — "
+                + "uploaded by faculty to Drive and synced live.\n\n"
+                + "3. Live\n"
+                + "Join faculty-led sessions over Jitsi, Google Meet, or YouTube Live — "
+                + "all rendered in-app via Chrome's engine.\n\n"
+                + "4. Community\n"
+                + "Chat with Rutu AI for instant help. Toggle AI+Web for Gemini-powered "
+                + "answers to deeper legal questions. Tap a faculty to email them directly.\n\n"
+                + "5. Profile\n"
+                + "Change your photo, toggle dark mode, open Settings, and find this guide.\n\n"
+                + "Tips\n"
+                + "• Videos support landscape fullscreen — tap the rotate icon.\n"
+                + "• The Question Bank refreshes twice a day at 6 AM and 6 PM.\n"
+                + "• A Combined Daily Test mixing every subject is pinned at the top.\n"
+                + "• Pull-to-refresh on Courses to re-sync content from Drive.");
     }
 
-    private void showInfo(String title, String msg) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle(title).setMessage(msg).setPositiveButton("OK", null).show();
+    private void openInfo(String title, String body) {
+        startActivity(InfoActivity.newIntent(requireContext(), title, body));
     }
 
     private void openUrl(String url) {

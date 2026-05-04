@@ -1,3 +1,7 @@
+# Media3 ExoPlayer — keep classes used via reflection / @UnstableApi
+-keep class androidx.media3.** { *; }
+-dontwarn androidx.media3.**
+
 # Keep all app model/data classes — Firestore uses reflection to deserialize
 -keep class com.legalstaan.app.LiveSession { *; }
 -keepclassmembers class com.legalstaan.app.LiveSession {

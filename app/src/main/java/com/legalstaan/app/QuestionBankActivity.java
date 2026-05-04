@@ -17,7 +17,15 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
+/**
+ * Lists the day's rotated test sets — Combined Daily Test pinned at the
+ * top, then per-subject sets. Refreshes twice daily (06:00 and 18:00 local
+ * time); see {@link TestRotation} for the rotation logic and
+ * {@link TestRefreshScheduler} for the slot-boundary notifications.
+ */
 public class QuestionBankActivity extends AppCompatActivity {
+
+    private TextView tvSlotTitle, tvSlotSubtitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +40,30 @@ public class QuestionBankActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
+        tvSlotTitle    = findViewById(R.id.tv_slot_title);
+        tvSlotSubtitle = findViewById(R.id.tv_slot_subtitle);
+
         RecyclerView rv = findViewById(R.id.rv_test_sets);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        rv.setAdapter(new TestSetAdapter(QuestionBank.all()));
+        rv.setAdapter(new TestSetAdapter(TestRotation.currentTestSets()));
+
+        // Make sure the rotation alarm is registered (idempotent).
+        TestRefreshScheduler.scheduleNext(this);
+
+        renderSlotBanner();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        renderSlotBanner();
+    }
+
+    private void renderSlotBanner() {
+        TestRotation.Slot slot = TestRotation.currentSlot();
+        tvSlotTitle.setText(slot.label + " Slot");
+        tvSlotSubtitle.setText(TestRotation.formatTimeUntilNextSlot()
+                + " · 6 AM & 6 PM daily");
     }
 
     private class TestSetAdapter extends RecyclerView.Adapter<TestSetAdapter.VH> {

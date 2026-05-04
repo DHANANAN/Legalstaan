@@ -50,8 +50,18 @@
             android:supportsPictureInPicture="true" />
 
         <activity
+            android:name=".ExoPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/Theme.LegalstaanApp.Player" />
+
+        <activity
             android:name=".SettingsActivity"
             android:label="Settings"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".InfoActivity"
             android:parentActivityName=".MainActivity" />
 
         <activity
@@ -113,6 +123,11 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Twice-daily test rotation alarm (06:00 + 18:00 local) -->
+        <receiver
+            android:name=".TestRefreshScheduler$RefreshReceiver"
+            android:exported="false" />
 
     </application>
 </manifest>

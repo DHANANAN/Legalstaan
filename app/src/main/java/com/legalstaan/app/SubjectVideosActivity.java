@@ -31,14 +31,14 @@ import java.util.List;
 /**
  * Browses lectures and study materials for a subject.
  *
- * Two data paths, transparent to the user:
- * 1) Static — config.json declares a {@code videos} array; the items are listed.
- * 2) Live Drive folder — config.json declares a {@code folder_id}; the contents
- *    are fetched from Drive at runtime, so uploading to the folder updates the
- *    app instantly without a release.
+ * Two data paths:
+ * 1) Static — config.json declares a {@code videos} array; items listed as-is.
+ * 2) Live Drive folder — config.json declares a {@code folder_id}; the entire
+ *    Drive tree under that folder is walked breadth-first and the videos +
+ *    PDFs are presented in two sections: "Lectures" and "Material".
  *
- * Sub-folders in a Drive listing open this same activity recursively, so users
- * can drill in and out naturally.
+ * Sub-folders are flattened into the result silently — students never see
+ * folder structure, just the content.
  */
 public class SubjectVideosActivity extends AppCompatActivity {
 
@@ -47,8 +47,9 @@ public class SubjectVideosActivity extends AppCompatActivity {
     public static final String EXTRA_IS_STUDY_MATERIAL = "is_study_material";
     public static final String EXTRA_FOLDER_ID         = "folder_id";
 
-    private final List<VideoItem> items = new ArrayList<>();
-    private VideoListAdapter adapter;
+    /** Combined header + item list driving the RecyclerView. */
+    private final List<Object> rows = new ArrayList<>();
+    private SectionAdapter adapter;
 
     private SwipeRefreshLayout swipe;
     private ProgressBar        progress;
@@ -69,7 +70,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
         String subjectId    = getIntent().getStringExtra(EXTRA_SUBJECT_ID);
         String subjectTitle = getIntent().getStringExtra(EXTRA_SUBJECT_TITLE);
         isStudyMaterial     = getIntent().getBooleanExtra(EXTRA_IS_STUDY_MATERIAL, false);
-        folderId            = getIntent().getStringExtra(EXTRA_FOLDER_ID); // sub-folder drill-down
+        folderId            = getIntent().getStringExtra(EXTRA_FOLDER_ID);
         driveApiKey         = getString(R.string.drive_api_key);
 
         Toolbar toolbar = findViewById(R.id.toolbar_subject);
@@ -94,52 +95,38 @@ public class SubjectVideosActivity extends AppCompatActivity {
 
         RecyclerView rv = findViewById(R.id.rv_subject_videos);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new VideoListAdapter(items, this::openItem);
+        adapter = new SectionAdapter(rows, this::openItem);
         rv.setAdapter(adapter);
 
-        // Resolve the folder_id (and any static fallback) for this subject from config.json.
-        if (folderId == null) {
-            if ("__study_materials__".equals(subjectId)) {
-                loadAllStudyMaterials();
-            } else {
-                resolveSubjectFromConfig(subjectId);
-            }
-        } else {
-            // Drilled into a sub-folder — fetch directly from Drive.
+        if (folderId != null) {
             fetchFromDrive();
+        } else if ("__study_materials__".equals(subjectId)) {
+            loadAllStudyMaterials();
+        } else {
+            resolveSubjectFromConfig(subjectId);
         }
     }
 
     private void reload() {
-        items.clear();
+        rows.clear();
         adapter.notifyDataSetChanged();
         if (folderId != null) {
             fetchFromDrive();
         } else {
-            // Static config can't really refresh — just hide the spinner.
             swipe.setRefreshing(false);
         }
     }
 
     private void openItem(VideoItem item) {
-        if (item.isFolder()) {
-            // Drill into the sub-folder by relaunching the same activity.
-            Intent i = new Intent(this, SubjectVideosActivity.class);
-            i.putExtra(EXTRA_SUBJECT_TITLE,    item.title);
-            i.putExtra(EXTRA_FOLDER_ID,        item.fileId);
-            i.putExtra(EXTRA_IS_STUDY_MATERIAL, isStudyMaterial);
-            startActivity(i);
-            return;
-        }
-        if (item.isPdf() || isStudyMaterial) {
+        if (item.isPdf() || (isStudyMaterial && !item.isVideo())) {
             // Drive's full PDF viewer in Chrome Custom Tab.
             openInCustomTab("https://drive.google.com/file/d/" + item.fileId + "/view");
             return;
         }
-        // Default: video.
-        Intent intent = new Intent(this, VideoActivity.class);
-        intent.putExtra(VideoActivity.EXTRA_FILE_ID, item.fileId);
-        intent.putExtra(VideoActivity.EXTRA_TITLE,   item.title);
+        // Video — try ExoPlayer first; falls back to WebView VideoActivity on error.
+        Intent intent = new Intent(this, ExoPlayerActivity.class);
+        intent.putExtra(ExoPlayerActivity.EXTRA_FILE_ID, item.fileId);
+        intent.putExtra(ExoPlayerActivity.EXTRA_TITLE,   item.title);
         startActivity(intent);
     }
 
@@ -158,7 +145,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
         }
     }
 
-    /** Look up the subject in config.json and either: load static videos, or kick off a Drive fetch. */
+    /** Resolve subject from config.json — Drive path takes priority over static videos. */
     private void resolveSubjectFromConfig(String subjectId) {
         if (subjectId == null) {
             showError("Subject not found");
@@ -182,20 +169,17 @@ public class SubjectVideosActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Static videos branch — load synchronously.
+                // Static videos branch.
+                List<VideoItem> items = new ArrayList<>();
                 JSONArray videos = subj.optJSONArray("videos");
                 if (videos != null) {
                     for (int j = 0; j < videos.length(); j++) {
                         JSONObject v = videos.getJSONObject(j);
-                        items.add(new VideoItem(v.getString("title"), v.getString("file_id")));
+                        items.add(new VideoItem(v.getString("title"), v.getString("file_id"),
+                                isStudyMaterial ? VideoItem.MIME_PDF : "video/mp4"));
                     }
                 }
-                if (items.isEmpty()) {
-                    showEmpty(isStudyMaterial ? "No study material yet" : "No lectures yet",
-                            "Check back soon — content lands here as faculty upload it.");
-                } else {
-                    showList();
-                }
+                presentItems(items);
                 return;
             }
             showError("Subject not found");
@@ -208,6 +192,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
         try {
             JSONObject root     = readConfig();
             JSONArray  subjects = root.getJSONArray("subjects");
+            List<VideoItem> items = new ArrayList<>();
             for (int i = 0; i < subjects.length(); i++) {
                 JSONObject subj = subjects.getJSONObject(i);
                 if (!"study_material".equals(subj.optString("category", "lecture"))) continue;
@@ -220,12 +205,7 @@ public class SubjectVideosActivity extends AppCompatActivity {
                 }
             }
             isStudyMaterial = true;
-            if (items.isEmpty()) {
-                showEmpty("No study material yet",
-                        "Check back soon — content lands here as faculty upload it.");
-            } else {
-                showList();
-            }
+            presentItems(items);
         } catch (Exception e) {
             showError("Could not load materials.");
         }
@@ -239,21 +219,13 @@ public class SubjectVideosActivity extends AppCompatActivity {
         return new JSONObject(new String(buf, StandardCharsets.UTF_8));
     }
 
-    /** Live Drive fetch — uses {@link DriveListing} on a background thread. */
+    /** Live Drive fetch — recursive flatten so the user just sees Lectures + Material. */
     private void fetchFromDrive() {
         showLoading();
-        DriveListing.fetchFolder(folderId, driveApiKey, new DriveListing.Callback() {
+        DriveListing.fetchFolderRecursive(folderId, driveApiKey, new DriveListing.Callback() {
             @Override
             public void onResult(List<VideoItem> result) {
-                items.clear();
-                items.addAll(result);
-                adapter.notifyDataSetChanged();
-                if (items.isEmpty()) {
-                    showEmpty("This folder is empty",
-                            "Once content is uploaded to Drive, it'll show up here.");
-                } else {
-                    showList();
-                }
+                presentItems(result);
             }
 
             @Override
@@ -263,9 +235,39 @@ public class SubjectVideosActivity extends AppCompatActivity {
         });
     }
 
+    /** Group items into Lectures (videos) + Material (PDFs) sections. */
+    private void presentItems(List<VideoItem> items) {
+        rows.clear();
+        List<VideoItem> lectures = new ArrayList<>();
+        List<VideoItem> materials = new ArrayList<>();
+        for (VideoItem v : items) {
+            if (v.isPdf()) materials.add(v);
+            else if (v.isVideo()) lectures.add(v);
+            else if (isStudyMaterial) materials.add(v);
+            else lectures.add(v);
+        }
+
+        if (!lectures.isEmpty()) {
+            rows.add("Lectures (" + lectures.size() + ")");
+            rows.addAll(lectures);
+        }
+        if (!materials.isEmpty()) {
+            rows.add("Material (" + materials.size() + ")");
+            rows.addAll(materials);
+        }
+
+        adapter.notifyDataSetChanged();
+        if (rows.isEmpty()) {
+            showEmpty(isStudyMaterial ? "No material yet" : "No content yet",
+                    "Once content is uploaded to Drive, it'll show up here.");
+        } else {
+            showList();
+        }
+    }
+
     private void showLoading() {
         swipe.setRefreshing(false);
-        progress.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        progress.setVisibility(rows.isEmpty() ? View.VISIBLE : View.GONE);
         emptyLayout.setVisibility(View.GONE);
     }
 
@@ -280,22 +282,22 @@ public class SubjectVideosActivity extends AppCompatActivity {
         progress.setVisibility(View.GONE);
         emptyTitle.setText(title);
         emptyMessage.setText(message);
-        emptyRetry.setVisibility(View.GONE);
+        emptyRetry.setVisibility(folderId != null ? View.VISIBLE : View.GONE);
         emptyLayout.setVisibility(View.VISIBLE);
     }
 
     private void showError(String message) {
         swipe.setRefreshing(false);
         progress.setVisibility(View.GONE);
+        if (!rows.isEmpty()) {
+            emptyLayout.setVisibility(View.GONE);
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            return;
+        }
         emptyTitle.setText("Couldn't load");
         emptyMessage.setText(message);
         emptyRetry.setVisibility(folderId != null ? View.VISIBLE : View.GONE);
         emptyLayout.setVisibility(View.VISIBLE);
-        if (!items.isEmpty()) {
-            // Already showing some items — keep them visible and just toast the error.
-            emptyLayout.setVisibility(View.GONE);
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        }
     }
 
     @Override
@@ -307,86 +309,107 @@ public class SubjectVideosActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // ── Adapter ──────────────────────────────────────────────────────────────
+    // ── Adapter (header rows + item rows) ────────────────────────────────────
+
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_ITEM   = 1;
 
     interface OnVideoClickListener { void onClick(VideoItem item); }
 
-    static class VideoListAdapter extends RecyclerView.Adapter<VideoListAdapter.VH> {
+    static class SectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-        private final List<VideoItem>      items;
+        private final List<Object>         rows;
         private final OnVideoClickListener listener;
 
-        VideoListAdapter(List<VideoItem> items, OnVideoClickListener listener) {
-            this.items    = items;
+        SectionAdapter(List<Object> rows, OnVideoClickListener listener) {
+            this.rows     = rows;
             this.listener = listener;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return rows.get(position) instanceof String ? TYPE_HEADER : TYPE_ITEM;
         }
 
         @NonNull
         @Override
-        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_video, parent, false);
-            return new VH(v);
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater inf = LayoutInflater.from(parent.getContext());
+            if (viewType == TYPE_HEADER) {
+                View v = inf.inflate(R.layout.item_section_header, parent, false);
+                return new HeaderVH(v);
+            }
+            View v = inf.inflate(R.layout.item_video, parent, false);
+            return new ItemVH(v);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull VH h, int position) {
-            VideoItem item = items.get(position);
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            Object row = rows.get(position);
+            if (row instanceof String) {
+                ((HeaderVH) holder).tvHeader.setText((String) row);
+                return;
+            }
+            VideoItem item = (VideoItem) row;
+            ItemVH h = (ItemVH) holder;
             h.tvTitle.setText(item.title);
 
-            if (item.isFolder()) {
-                showTypeIcon(h, android.R.drawable.ic_menu_more);
-                h.tvKind.setText("Folder");
-                h.tvKind.setVisibility(View.VISIBLE);
-                h.chevron.setImageResource(android.R.drawable.ic_media_next);
-            } else if (item.isPdf()) {
-                showTypeIcon(h, android.R.drawable.ic_menu_agenda);
-                h.tvKind.setText("Study Material");
+            if (item.isPdf()) {
+                h.tvNum.setVisibility(View.GONE);
+                h.ivType.setVisibility(View.VISIBLE);
+                h.ivType.setImageResource(android.R.drawable.ic_menu_agenda);
+                h.tvKind.setText("Material");
                 h.tvKind.setVisibility(View.VISIBLE);
                 h.chevron.setImageResource(android.R.drawable.stat_sys_download_done);
-            } else if (item.isVideo()) {
-                int lectureNum = computeLectureNum(items, position);
-                if (lectureNum > 0) {
+            } else {
+                int n = computeLectureNum(rows, position);
+                if (n > 0) {
                     h.tvNum.setVisibility(View.VISIBLE);
                     h.ivType.setVisibility(View.GONE);
-                    h.tvNum.setText(String.valueOf(lectureNum));
+                    h.tvNum.setText(String.valueOf(n));
                 } else {
-                    showTypeIcon(h, android.R.drawable.ic_media_play);
+                    h.tvNum.setVisibility(View.GONE);
+                    h.ivType.setVisibility(View.VISIBLE);
+                    h.ivType.setImageResource(android.R.drawable.ic_media_play);
                 }
                 h.tvKind.setText("Lecture");
                 h.tvKind.setVisibility(View.VISIBLE);
                 h.chevron.setImageResource(android.R.drawable.ic_media_play);
-            } else {
-                showTypeIcon(h, android.R.drawable.ic_menu_view);
-                h.tvKind.setVisibility(View.GONE);
-                h.chevron.setImageResource(android.R.drawable.ic_media_next);
             }
 
             h.itemView.setOnClickListener(v -> listener.onClick(item));
         }
 
-        private static void showTypeIcon(VH h, int resId) {
-            h.tvNum.setVisibility(View.GONE);
-            h.ivType.setVisibility(View.VISIBLE);
-            h.ivType.setImageResource(resId);
-        }
-
-        /** Number videos sequentially among the videos in the list, ignoring folders / pdfs. */
-        private static int computeLectureNum(List<VideoItem> all, int idx) {
+        /** Lecture number = position among videos within the same Lectures section. */
+        private static int computeLectureNum(List<Object> rows, int idx) {
             int count = 0;
-            for (int i = 0; i <= idx; i++) {
-                if (all.get(i).isVideo()) count++;
+            // Walk back to the header above this item, then forward from there.
+            int sectionStart = 0;
+            for (int i = idx; i >= 0; i--) {
+                if (rows.get(i) instanceof String) { sectionStart = i + 1; break; }
+            }
+            for (int i = sectionStart; i <= idx; i++) {
+                Object r = rows.get(i);
+                if (r instanceof VideoItem && ((VideoItem) r).isVideo()) count++;
             }
             return count;
         }
 
         @Override
-        public int getItemCount() { return items.size(); }
+        public int getItemCount() { return rows.size(); }
 
-        static class VH extends RecyclerView.ViewHolder {
+        static class HeaderVH extends RecyclerView.ViewHolder {
+            final TextView tvHeader;
+            HeaderVH(@NonNull View v) {
+                super(v);
+                tvHeader = v.findViewById(R.id.tv_section_header);
+            }
+        }
+
+        static class ItemVH extends RecyclerView.ViewHolder {
             final TextView  tvTitle, tvNum, tvKind;
             final ImageView ivType, chevron;
-            VH(@NonNull View v) {
+            ItemVH(@NonNull View v) {
                 super(v);
                 tvTitle = v.findViewById(R.id.tv_video_title);
                 tvNum   = v.findViewById(R.id.tv_video_num);
