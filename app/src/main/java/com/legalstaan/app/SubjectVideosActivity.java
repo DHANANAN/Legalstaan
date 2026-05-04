@@ -67,12 +67,12 @@ public class SubjectVideosActivity extends AppCompatActivity {
             openInCustomTab("https://drive.google.com/file/d/" + item.fileId + "/view");
             return;
         }
-        // Try the ExoPlayer fast-path first (smooth controls, true fullscreen).
-        // If Drive returns an HTML interstitial instead of mp4, ExoPlayerActivity
-        // automatically falls back to the WebView-based VideoActivity.
-        Intent intent = new Intent(this, ExoPlayerActivity.class);
-        intent.putExtra(ExoPlayerActivity.EXTRA_FILE_ID, item.fileId);
-        intent.putExtra(ExoPlayerActivity.EXTRA_TITLE,   item.title);
+        // Drive's embedded preview in our WebView is the only path that handles
+        // the auth + virus-scan interstitial reliably. It now supports landscape
+        // and immersive fullscreen via the rotate button.
+        Intent intent = new Intent(this, VideoActivity.class);
+        intent.putExtra(VideoActivity.EXTRA_FILE_ID, item.fileId);
+        intent.putExtra(VideoActivity.EXTRA_TITLE,   item.title);
         startActivity(intent);
     }
 

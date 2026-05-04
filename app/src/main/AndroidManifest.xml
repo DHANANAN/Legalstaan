@@ -50,13 +50,6 @@
             android:supportsPictureInPicture="true" />
 
         <activity
-            android:name=".ExoPlayerActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout"
-            android:screenOrientation="fullSensor"
-            android:supportsPictureInPicture="true"
-            android:theme="@style/Theme.LegalstaanApp.Player" />
-
-        <activity
             android:name=".SettingsActivity"
             android:label="Settings"
             android:parentActivityName=".MainActivity" />

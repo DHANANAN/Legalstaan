@@ -1,7 +1,3 @@
--keep class androidx.media3.** { *; }
--keep class com.google.android.exoplayer2.** { *; }
--dontwarn androidx.media3.**
-
 # Keep all app model/data classes — Firestore uses reflection to deserialize
 -keep class com.legalstaan.app.LiveSession { *; }
 -keepclassmembers class com.legalstaan.app.LiveSession {

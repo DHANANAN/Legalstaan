@@ -20,7 +20,21 @@
             android:background="@color/primaryColor"
             android:elevation="4dp"
             app:titleTextColor="@color/white"
-            app:navigationIconTint="@color/white" />
+            app:navigationIconTint="@color/white">
+
+            <ImageButton
+                android:id="@+id/btn_live_open_browser"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Open in browser"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:src="@android:drawable/ic_menu_set_as"
+                app:tint="@color/white" />
+
+        </androidx.appcompat.widget.Toolbar>
 
         <WebView
             android:id="@+id/webview_live"
