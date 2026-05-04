@@ -72,6 +72,9 @@ public class CoursesFragment extends Fragment {
         intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_ID,    subject.id);
         intent.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_TITLE, subject.title);
         intent.putExtra(SubjectVideosActivity.EXTRA_IS_STUDY_MATERIAL, subject.isStudyMaterial());
+        if (subject.isDriveLinked()) {
+            intent.putExtra(SubjectVideosActivity.EXTRA_FOLDER_ID, subject.folderId);
+        }
         startActivity(intent);
     }
 
@@ -91,13 +94,16 @@ public class CoursesFragment extends Fragment {
                 String color    = s.getString("color");
                 String category = s.optString("category", "lecture");
 
-                JSONArray     vArr  = s.getJSONArray("videos");
+                JSONArray     vArr  = s.optJSONArray("videos");
                 List<VideoItem> vList = new ArrayList<>();
-                for (int j = 0; j < vArr.length(); j++) {
-                    JSONObject v = vArr.getJSONObject(j);
-                    vList.add(new VideoItem(v.getString("title"), v.getString("file_id")));
+                if (vArr != null) {
+                    for (int j = 0; j < vArr.length(); j++) {
+                        JSONObject v = vArr.getJSONObject(j);
+                        vList.add(new VideoItem(v.getString("title"), v.getString("file_id")));
+                    }
                 }
-                Subject subject = new Subject(id, title, color, vList, category);
+                String folderId = s.optString("folder_id", null);
+                Subject subject = new Subject(id, title, color, vList, category, folderId);
                 if (subject.isStudyMaterial()) studyMaterials.add(subject);
                 else                           lectures.add(subject);
             }
@@ -146,9 +152,15 @@ public class CoursesFragment extends Fragment {
                 Subject s = row.subject;
                 SubjectVH h = (SubjectVH) holder;
                 h.tvTitle.setText(s.title);
-                String label = s.isStudyMaterial()
-                        ? s.getVideoCount() + " files"
-                        : s.getVideoCount() + " lectures";
+                String label;
+                if (s.isDriveLinked()) {
+                    label = s.isStudyMaterial() ? "Live · Drive synced"
+                                                : "Tap to load lectures";
+                } else if (s.isStudyMaterial()) {
+                    label = s.getVideoCount() + " files";
+                } else {
+                    label = s.getVideoCount() + " lectures";
+                }
                 h.tvCount.setText(label);
 
                 GradientDrawable dot = new GradientDrawable();

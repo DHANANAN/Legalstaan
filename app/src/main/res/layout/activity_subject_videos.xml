@@ -15,13 +15,85 @@
         app:titleTextColor="@color/white"
         app:navigationIconTint="@color/white" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_subject_videos"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:layout_weight="1">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_subject_videos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_subject_videos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layoutAnimation="@anim/list_layout_animation"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- Loading spinner overlay -->
+        <ProgressBar
+            android:id="@+id/pb_subject_loading"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/accentColor"
+            android:visibility="gone" />
+
+        <!-- Empty / error state -->
+        <LinearLayout
+            android:id="@+id/layout_subject_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:contentDescription="Empty state icon"
+                android:src="@android:drawable/ic_menu_recent_history"
+                app:tint="@color/colorSecondaryText" />
+
+            <TextView
+                android:id="@+id/tv_subject_empty_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Nothing here yet"
+                android:textColor="@color/colorBodyText"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_subject_empty_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Pull down to refresh."
+                android:textColor="@color/colorSecondaryText"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_subject_retry"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Retry"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

@@ -33,4 +33,12 @@
     <string name="search_hint">Search for courses</string>
     <string name="change_photo">Change Photo</string>
     <string name="default_web_client_id" translatable="false">1055408756496-3n7te4u5kdbasap209k11jkjr8tk86hp.apps.googleusercontent.com</string>
+
+    <!--
+        Google Drive API v3 key — required for live folder listings.
+        See DRIVE_SETUP.md for how to create one (Google Cloud Console →
+        Enable Drive API → API key restricted to com.legalstaan.app).
+        Keep the placeholder when forking; replace before release.
+    -->
+    <string name="drive_api_key" translatable="false">PASTE_DRIVE_API_KEY_HERE</string>
 </resources>

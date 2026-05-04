@@ -41,7 +41,7 @@ public class SettingsActivity extends AppCompatActivity {
             PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
             tvVersion.setText("v" + pi.versionName);
         } catch (Exception e) {
-            tvVersion.setText("v1.24.0");
+            tvVersion.setText("v1.25.0");
         }
 
         findViewById(R.id.row_contact).setOnClickListener(v ->
