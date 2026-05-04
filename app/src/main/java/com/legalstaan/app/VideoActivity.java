@@ -1,6 +1,8 @@
 package com.legalstaan.app;
 
 import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,15 +11,18 @@ import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 import java.util.Collections;
@@ -32,6 +37,7 @@ public class VideoActivity extends AppCompatActivity {
     private View layoutNormal;
     private WebChromeClient.CustomViewCallback customViewCallback;
     private View customView;
+    private boolean userIsLandscape = false;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -50,6 +56,10 @@ public class VideoActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(title != null ? title : "Video Lecture");
         }
 
+        // Manual rotate button on the toolbar — gives users control over orientation.
+        ImageButton btnRotate = findViewById(R.id.btn_video_rotate);
+        if (btnRotate != null) btnRotate.setOnClickListener(v -> toggleOrientation());
+
         webView     = findViewById(R.id.web_view_player);
         progressBar = findViewById(R.id.video_progress);
 
@@ -61,6 +71,8 @@ public class VideoActivity extends AppCompatActivity {
 
         setupPlayer();
         loadVideo();
+        applyImmersive(getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE);
     }
 
     // Desktop Chrome UA — tricks Google Drive into serving video without "virus scan" wall
@@ -81,34 +93,19 @@ public class VideoActivity extends AppCompatActivity {
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setAllowFileAccess(true);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        // Spoof desktop Chrome to bypass Google Drive virus scan interstitial
         s.setUserAgentString(DESKTOP_UA);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
-                // Inject JS to auto-click "Download anyway" if virus scan page appears
                 view.evaluateJavascript(
                         "(function(){var b=document.getElementById('uc-download-link');" +
                                 "if(b)b.click();})()", null);
             }
 
-            // Strip X-Requested-With header — Google uses it to detect WebView
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view,
-                                                              WebResourceRequest request) {
-                return super.shouldInterceptRequest(view, request);
-            }
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                // Keep all Google Drive navigation in-app
-                if (url.contains("drive.google.com") || url.contains("accounts.google.com")
-                        || url.contains("docs.google.com")) {
-                    return false;
-                }
                 return false;
             }
 
@@ -136,7 +133,6 @@ public class VideoActivity extends AppCompatActivity {
                 request.grant(request.getResources());
             }
 
-            // Called when Drive video player enters fullscreen (landscape tap)
             @Override
             public void onShowCustomView(View view, CustomViewCallback callback) {
                 if (customView != null) {
@@ -146,20 +142,15 @@ public class VideoActivity extends AppCompatActivity {
                 customView         = view;
                 customViewCallback = callback;
 
-                // Hide normal layout, show fullscreen container
                 layoutNormal.setVisibility(View.GONE);
                 fullscreenContainer.setVisibility(View.VISIBLE);
                 fullscreenContainer.addView(view);
 
-                // Go fully immersive
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                // Force landscape when Drive's player goes fullscreen.
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                applyImmersive(true);
             }
 
-            // Called when Drive video player exits fullscreen
             @Override
             public void onHideCustomView() {
                 if (customView == null) return;
@@ -168,9 +159,8 @@ public class VideoActivity extends AppCompatActivity {
                 fullscreenContainer.setVisibility(View.GONE);
                 layoutNormal.setVisibility(View.VISIBLE);
 
-                // Restore UI
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+                applyImmersive(false);
 
                 customViewCallback.onCustomViewHidden();
                 customView         = null;
@@ -188,6 +178,40 @@ public class VideoActivity extends AppCompatActivity {
         webView.loadUrl("https://drive.google.com/file/d/" + fileId + "/preview");
     }
 
+    private void toggleOrientation() {
+        userIsLandscape = !userIsLandscape;
+        setRequestedOrientation(userIsLandscape
+                ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyImmersive(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE);
+    }
+
+    /** Hide system bars + toolbar in landscape so the video gets the whole screen. */
+    private void applyImmersive(boolean landscape) {
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), !landscape);
+        WindowInsetsControllerCompat ctrl =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        if (ctrl != null) {
+            if (landscape) {
+                ctrl.hide(WindowInsetsCompat.Type.systemBars());
+                ctrl.setSystemBarsBehavior(
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            } else {
+                ctrl.show(WindowInsetsCompat.Type.systemBars());
+            }
+        }
+        Toolbar tb = findViewById(R.id.toolbar_video);
+        if (tb != null) tb.setVisibility(landscape ? View.GONE : View.VISIBLE);
+        if (landscape) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -199,11 +223,16 @@ public class VideoActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // Exit fullscreen first if active
         if (customView != null) {
             WebChromeClient.CustomViewCallback cb = customViewCallback;
-            // onHideCustomView will be called by WebChromeClient
             if (cb != null) cb.onCustomViewHidden();
+            return;
+        }
+        if (getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE) {
+            // First tap rotates back to portrait — second tap exits.
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            userIsLandscape = false;
             return;
         }
         if (webView.canGoBack()) {
@@ -216,7 +245,6 @@ public class VideoActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Pause JS execution to save CPU when backgrounded
         webView.onPause();
     }
 

@@ -22,4 +22,8 @@ public class FacultyManager {
     public static boolean isFaculty(String email) {
         return email != null && EMAILS.contains(email.trim().toLowerCase());
     }
+
+    public static Set<String> allFacultyEmails() {
+        return java.util.Collections.unmodifiableSet(EMAILS);
+    }
 }

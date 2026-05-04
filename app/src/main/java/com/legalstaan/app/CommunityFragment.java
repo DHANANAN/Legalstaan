@@ -2,6 +2,7 @@ package com.legalstaan.app;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -154,17 +156,57 @@ public class CommunityFragment extends Fragment {
     }
 
     private void onItemClick(Object item) {
-        if (item instanceof Contact) {
-            Contact c = (Contact) item;
-            if (c.isBot) {
-                // Open Rutu AI
-                startActivity(new Intent(requireActivity(), RutuChatActivity.class));
-            } else {
-                // Open direct chat
-                Intent intent = new Intent(requireActivity(), DirectChatActivity.class);
-                intent.putExtra("contact_name", c.name);
-                intent.putExtra("contact_email", c.email);
-                startActivity(intent);
+        if (!(item instanceof Contact)) return;
+        Contact c = (Contact) item;
+
+        if (c.isBot) {
+            startActivity(new Intent(requireActivity(), RutuChatActivity.class));
+            return;
+        }
+
+        // Faculty contacts → email via Gmail (the messaging story for this release).
+        // Other custom contacts → existing in-app direct chat.
+        if (FacultyManager.isFaculty(c.email)) {
+            sendEmailToFaculty(c);
+        } else {
+            Intent intent = new Intent(requireActivity(), DirectChatActivity.class);
+            intent.putExtra("contact_name", c.name);
+            intent.putExtra("contact_email", c.email);
+            startActivity(intent);
+        }
+    }
+
+    /** Open Gmail (or any mail app) pre-filled to the chosen faculty member. */
+    private void sendEmailToFaculty(Contact c) {
+        String studentName = "a Legalstaan student";
+        if (currentUser != null && currentUser.getDisplayName() != null
+                && !currentUser.getDisplayName().isEmpty()) {
+            studentName = currentUser.getDisplayName();
+        }
+        String subject = "Doubt for " + c.name + " — Legalstaan";
+        String body    = "Hello " + c.name + ",\n\n"
+                + "I'm " + studentName + " from the Legalstaan app and I had a question about "
+                + (c.subtitle != null ? c.subtitle : "your subject") + ".\n\n"
+                + "[Type your question here]\n\n"
+                + "Thank you,\n" + studentName;
+
+        Intent mail = new Intent(Intent.ACTION_SENDTO);
+        mail.setData(Uri.parse("mailto:"));
+        mail.putExtra(Intent.EXTRA_EMAIL, new String[]{c.email});
+        mail.putExtra(Intent.EXTRA_SUBJECT, subject);
+        mail.putExtra(Intent.EXTRA_TEXT, body);
+
+        try {
+            // Prefer Gmail directly if installed — drops the user straight into compose.
+            Intent gmail = new Intent(mail);
+            gmail.setPackage("com.google.android.gm");
+            startActivity(gmail);
+        } catch (Exception ignored) {
+            try {
+                startActivity(Intent.createChooser(mail, "Email " + c.name));
+            } catch (Exception e) {
+                Toast.makeText(requireContext(),
+                        "No email app installed on this device", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -233,6 +275,12 @@ public class CommunityFragment extends Fragment {
                 catch (Exception e) { bg.setColor(Color.GRAY); }
                 h.tvAvatar.setBackground(bg);
 
+                // Show the mail-glyph hint on faculty rows so users know what tapping does.
+                if (h.ivActionHint != null) {
+                    boolean showMail = !c.isBot && FacultyManager.isFaculty(c.email);
+                    h.ivActionHint.setVisibility(showMail ? View.VISIBLE : View.GONE);
+                }
+
                 h.itemView.setOnClickListener(v -> listener.onClick(c));
             }
         }
@@ -247,11 +295,13 @@ public class CommunityFragment extends Fragment {
 
         static class ContactVH extends RecyclerView.ViewHolder {
             final TextView tvAvatar, tvName, tvSubtitle;
+            final ImageView ivActionHint;
             ContactVH(View v) {
                 super(v);
                 tvAvatar = v.findViewById(R.id.tv_avatar);
                 tvName = v.findViewById(R.id.tv_contact_name);
                 tvSubtitle = v.findViewById(R.id.tv_contact_subtitle);
+                ivActionHint = v.findViewById(R.id.iv_action_hint);
             }
         }
     }

@@ -63,20 +63,21 @@ public class LiveStreamActivity extends AppCompatActivity {
         pendingTitle     = getIntent().getStringExtra("title");
         pendingIsFaculty = getIntent().getBooleanExtra("is_faculty", false);
 
-        if ("meet".equals(pendingPlatform)) {
-            // Google Meet blocks WebViews with "browser not secure" — use Chrome Custom Tab
-            // which is a real Chrome instance (no domain bar issue since Meet is full-screen)
+        // Both Meet and Jitsi must run outside the WebView. Meet flat-out blocks
+        // WebViews ("browser not secure"); Jitsi inherits the same Google OAuth
+        // policy when participants try to sign in. Hand both off to Chrome Custom Tab.
+        if ("meet".equals(pendingPlatform) || "jitsi".equals(pendingPlatform)) {
             if (!permissionsGranted()) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
                         REQ_PERMISSIONS);
             } else {
-                launchMeetInChrome();
+                launchExternal();
             }
             return;
         }
 
-        // For both Jitsi and YouTube, request camera+mic permissions first
+        // YouTube can stay in the WebView (no OAuth, public video stream).
         if (!permissionsGranted()) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
@@ -91,19 +92,32 @@ public class LiveStreamActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_PERMISSIONS) {
-            if ("meet".equals(pendingPlatform)) {
-                launchMeetInChrome();
+            if ("meet".equals(pendingPlatform) || "jitsi".equals(pendingPlatform)) {
+                launchExternal();
             } else {
                 launchStream();
             }
         }
     }
 
-    /** Google Meet MUST run in Chrome Custom Tab — WebView shows "browser not secure" */
-    private void launchMeetInChrome() {
-        String url = pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com";
+    /** Hand off Meet / Jitsi to Chrome Custom Tab (real Chrome — full WebRTC + Google OAuth). */
+    private void launchExternal() {
+        String url;
+        if ("meet".equals(pendingPlatform)) {
+            url = pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com";
+        } else {
+            // Jitsi — build the room URL with the same prejoin/welcome config we used in WebView
+            String cfg = "#config.prejoinPageEnabled=false"
+                    + "&config.enableWelcomePage=false"
+                    + "&config.disableDeepLinking=true";
+            if (!pendingIsFaculty) {
+                cfg += "&config.startWithVideoMuted=true&config.startWithAudioMuted=true";
+            }
+            url = "https://meet.jit.si/" + pendingRoomId + cfg;
+            Toast.makeText(this, "Opening Jitsi in your browser…", Toast.LENGTH_SHORT).show();
+        }
         openInCustomTab(url);
-        finish(); // close this activity since Meet is now in Chrome
+        finish();
     }
 
     private boolean permissionsGranted() {

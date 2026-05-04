@@ -178,14 +178,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void showSettings() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Settings")
-                .setMessage("• Dark Mode: use the toggle above\n\n"
-                        + "• App Version: 1.4.0\n\n"
-                        + "• Contact: contactlegalstaan@gmail.com\n\n"
-                        + "• Notifications: coming soon")
-                .setPositiveButton("OK", null)
-                .show();
+        startActivity(new Intent(requireContext(), SettingsActivity.class));
     }
 
     private void showHowToUse() {

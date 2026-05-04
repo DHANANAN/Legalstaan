@@ -63,14 +63,17 @@ public class SubjectVideosActivity extends AppCompatActivity {
 
     private void openItem(VideoItem item) {
         if (isStudyMaterial) {
-            // Open PDF / study file in the Drive full viewer via Chrome Custom Tab
+            // PDF / study file — Drive's full viewer in Chrome Custom Tab
             openInCustomTab("https://drive.google.com/file/d/" + item.fileId + "/view");
-        } else {
-            Intent intent = new Intent(this, VideoActivity.class);
-            intent.putExtra(VideoActivity.EXTRA_FILE_ID, item.fileId);
-            intent.putExtra(VideoActivity.EXTRA_TITLE,   item.title);
-            startActivity(intent);
+            return;
         }
+        // Try the ExoPlayer fast-path first (smooth controls, true fullscreen).
+        // If Drive returns an HTML interstitial instead of mp4, ExoPlayerActivity
+        // automatically falls back to the WebView-based VideoActivity.
+        Intent intent = new Intent(this, ExoPlayerActivity.class);
+        intent.putExtra(ExoPlayerActivity.EXTRA_FILE_ID, item.fileId);
+        intent.putExtra(ExoPlayerActivity.EXTRA_TITLE,   item.title);
+        startActivity(intent);
     }
 
     private void openInCustomTab(String url) {

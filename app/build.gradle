@@ -11,8 +11,8 @@ android {
         applicationId "com.legalstaan.app"
         minSdk 23
         targetSdk 35
-        versionCode 21
-        versionName "1.21.0"
+        versionCode 23
+        versionName "1.23.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -70,4 +70,17 @@ dependencies {
 
     // AndroidX WebKit — strip X-Requested-With header to bypass Google WebView detection
     implementation 'androidx.webkit:webkit:1.9.0'
+
+    // v1.22.0 mega-merge additions:
+    // Firebase Cloud Messaging — live class notifications
+    implementation 'com.google.firebase:firebase-messaging'
+
+    // Lifecycle (ViewModel + LiveData) for clean stateful flows in new features
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.8.7'
+
+    // SwipeRefreshLayout — used by SearchActivity / leaderboard
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    // Fragment KTX-equivalent (Java) — already covered by activity:1.9.0
 }

@@ -7,5 +7,10 @@ public class LegalstaanApp extends Application {
     public void onCreate() {
         super.onCreate();
         ThemeHelper.apply(this);
+        try {
+            LegalstaanFcmService.subscribeToTopics();
+        } catch (Throwable ignore) {
+            // Firebase not configured in some build variants — don't crash the app.
+        }
     }
 }

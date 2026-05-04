@@ -3,6 +3,7 @@ package com.legalstaan.app;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import java.util.concurrent.Executors;
 
 public class ChatsFragment extends Fragment {
 
+    private static final String TAG = "RutuAI";
     private static final String GEMINI_KEY = "AIzaSyCF2XJu2E68Tiuifh6sGBnsQMIrZSNPxF0";
     private static final String GEMINI_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY;
@@ -163,12 +165,14 @@ public class ChatsFragment extends Fragment {
                 conn.disconnect();
 
             } catch (Exception e) {
+                Log.e(TAG, "Gemini call failed", e);
+                String raw = e.getMessage() != null ? e.getMessage() : e.toString();
+                final String friendly = explainGeminiError(raw);
                 mainHandler.post(() -> {
                     if (isAdded()) {
                         tvStatus.setText("Gemini mode · AI+Web active");
-                        String errorDetails = e.getMessage() != null ? e.getMessage() : e.toString();
                         addAiMessage(getLocalResponse(userMessage) +
-                                "\n\n(Note: Couldn't reach Gemini — using local knowledge. Error: " + errorDetails + ")");
+                                "\n\n⚠️ Gemini unavailable — using local knowledge.\n" + friendly);
                     }
                 });
             }
@@ -294,6 +298,24 @@ public class ChatsFragment extends Fragment {
             if (input.contains(kw)) return true;
         }
         return false;
+    }
+
+    /** Translate cryptic Gemini errors into actionable guidance. */
+    private String explainGeminiError(String raw) {
+        if (raw == null) return "Reason: unknown.";
+        String low = raw.toLowerCase();
+        if (low.contains("http 429") || low.contains("resource_exhausted") || low.contains("quota"))
+            return "Reason: Free-tier quota exhausted (15 req/min, 1500/day on gemini-2.0-flash).\nFix: wait 1 min, or upgrade your Google AI Studio billing.";
+        if (low.contains("http 400") && low.contains("api key not valid"))
+            return "Reason: API key rejected.\nFix: regenerate at aistudio.google.com/apikey and update GEMINI_KEY in ChatsFragment.java.";
+        if (low.contains("http 403") || low.contains("permission_denied"))
+            return "Reason: Key blocked or referrer restriction.\nFix: in Google Cloud Console → Credentials, ensure the key has no application restriction (or allow Android package com.legalstaan.app).";
+        if (low.contains("http 404") || low.contains("model"))
+            return "Reason: Model name invalid (gemini-2.0-flash may have moved).\nFix: try gemini-1.5-flash or gemini-flash-latest in GEMINI_URL.";
+        if (low.contains("unable to resolve host") || low.contains("failed to connect")
+                || low.contains("timeout") || low.contains("etimedout"))
+            return "Reason: No network or DNS failure.\nFix: check Wi-Fi / mobile data.";
+        return "Reason: " + raw;
     }
 
     private String escapeJson(String text) {
