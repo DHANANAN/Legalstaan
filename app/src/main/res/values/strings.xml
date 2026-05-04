@@ -36,9 +36,11 @@
 
     <!--
         Google Drive API v3 key — required for live folder listings.
-        See DRIVE_SETUP.md for how to create one (Google Cloud Console →
-        Enable Drive API → API key restricted to com.legalstaan.app).
-        Keep the placeholder when forking; replace before release.
+        MUST be restricted in Google Cloud Console to:
+          • Application: Android — package com.legalstaan.app + release SHA-1
+          • API: Restrict key → Google Drive API only
+        Without those restrictions anyone reading this repo can spend the
+        project's quota. See DRIVE_SETUP.md.
     -->
-    <string name="drive_api_key" translatable="false">PASTE_DRIVE_API_KEY_HERE</string>
+    <string name="drive_api_key" translatable="false">AIzaSyD5ik_V30tAhvEEuS7aXPkGrOCZnrxzNck</string>
 </resources>
