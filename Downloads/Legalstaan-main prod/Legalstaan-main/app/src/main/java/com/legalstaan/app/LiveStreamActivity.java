@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -22,10 +23,18 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
+import java.util.Collections;
 
 public class LiveStreamActivity extends AppCompatActivity {
 
     private static final int REQ_PERMISSIONS = 100;
+
+    // Full desktop Chrome UA — bypasses Google's "disallowed_useragent" 403 for OAuth
+    private static final String DESKTOP_UA =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                    + "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     private WebView webView;
     private FrameLayout fullscreenContainer;
@@ -55,9 +64,15 @@ public class LiveStreamActivity extends AppCompatActivity {
         pendingIsFaculty = getIntent().getBooleanExtra("is_faculty", false);
 
         if ("meet".equals(pendingPlatform)) {
-            // Google Meet requires Google auth → open in Custom Tab (user stays signed in)
-            openInCustomTab(pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com");
-            finish();
+            // Google Meet blocks WebViews with "browser not secure" — use Chrome Custom Tab
+            // which is a real Chrome instance (no domain bar issue since Meet is full-screen)
+            if (!permissionsGranted()) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
+                        REQ_PERMISSIONS);
+            } else {
+                launchMeetInChrome();
+            }
             return;
         }
 
@@ -75,7 +90,20 @@ public class LiveStreamActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_PERMISSIONS) launchStream();
+        if (requestCode == REQ_PERMISSIONS) {
+            if ("meet".equals(pendingPlatform)) {
+                launchMeetInChrome();
+            } else {
+                launchStream();
+            }
+        }
+    }
+
+    /** Google Meet MUST run in Chrome Custom Tab — WebView shows "browser not secure" */
+    private void launchMeetInChrome() {
+        String url = pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com";
+        openInCustomTab(url);
+        finish(); // close this activity since Meet is now in Chrome
     }
 
     private boolean permissionsGranted() {
@@ -105,6 +133,8 @@ public class LiveStreamActivity extends AppCompatActivity {
 
         if ("jitsi".equals(pendingPlatform)) {
             loadJitsi();
+        } else if ("meet".equals(pendingPlatform)) {
+            webView.loadUrl(pendingMeetUrl != null ? pendingMeetUrl : "https://meet.google.com");
         } else {
             loadYoutube();
         }
@@ -124,7 +154,28 @@ public class LiveStreamActivity extends AppCompatActivity {
         // WebRTC getUserMedia support
         ws.setDatabaseEnabled(true);
 
-        webView.setWebViewClient(new WebViewClient());
+        // Full desktop Chrome UA — Google checks both the UA string AND the
+        // X-Requested-With header to detect WebViews. Just removing "; wv" is
+        // no longer enough; we need a complete desktop UA.
+        ws.setUserAgentString(DESKTOP_UA);
+
+        // Strip X-Requested-With header — the other signal Google uses to detect WebViews
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
+            WebSettingsCompat.setRequestedWithHeaderOriginAllowList(ws, Collections.emptySet());
+        }
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                // Keep Google OAuth and Meet navigation inside the WebView
+                if (url.contains("google.com") || url.contains("gstatic.com")
+                        || url.contains("youtube.com") || url.contains("jitsi")) {
+                    return false;
+                }
+                return false;
+            }
+        });
 
         webView.setWebChromeClient(new WebChromeClient() {
 

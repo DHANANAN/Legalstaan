@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (id == R.id.nav_live) {
                 loadFragment(new LiveFragment(), "Live Classes");
             } else if (id == R.id.nav_chats) {
-                loadFragment(new ChatsFragment(), "Community");
+                loadFragment(new CommunityFragment(), "Community");
             } else if (id == R.id.nav_profile) {
                 loadFragment(new ProfileFragment(), "Profile");
             }

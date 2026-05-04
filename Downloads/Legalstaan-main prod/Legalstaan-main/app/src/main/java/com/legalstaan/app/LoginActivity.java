@@ -134,7 +134,25 @@ public class LoginActivity extends AppCompatActivity {
                         });
             } catch (ApiException e) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(this, "Google sign-in failed. Code: " + e.getStatusCode(), Toast.LENGTH_LONG).show();
+                String msg;
+                int code = e.getStatusCode();
+                switch (code) {
+                    case 10: // DEVELOPER_ERROR
+                        msg = "Sign-in setup error. This build's SHA-1 fingerprint isn't registered in Firebase Console.\n\nFix: add the release SHA-1 in Firebase → Project Settings → Your apps → Add fingerprint, then download a fresh google-services.json.";
+                        break;
+                    case 7:  // NETWORK_ERROR
+                        msg = "No internet connection. Check your network and try again.";
+                        break;
+                    case 12500: // SIGN_IN_FAILED
+                        msg = "Google Play Services error. Update Google Play Services from the Play Store.";
+                        break;
+                    case 12501: // SIGN_IN_CANCELLED
+                        msg = "Sign-in cancelled.";
+                        break;
+                    default:
+                        msg = "Google sign-in failed. Code: " + code;
+                }
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
             }
         }
     }

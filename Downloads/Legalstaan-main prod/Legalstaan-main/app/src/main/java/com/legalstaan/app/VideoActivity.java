@@ -9,6 +9,7 @@ import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,6 +18,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
+import java.util.Collections;
 
 public class VideoActivity extends AppCompatActivity {
     public static final String EXTRA_FILE_ID = "file_id";
@@ -49,9 +53,20 @@ public class VideoActivity extends AppCompatActivity {
         webView     = findViewById(R.id.web_view_player);
         progressBar = findViewById(R.id.video_progress);
 
+        // Remove X-Requested-With header so Google doesn't detect WebView
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.REQUESTED_WITH_HEADER_ALLOW_LIST)) {
+            WebSettingsCompat.setRequestedWithHeaderOriginAllowList(
+                    webView.getSettings(), Collections.emptySet());
+        }
+
         setupPlayer();
         loadVideo();
     }
+
+    // Desktop Chrome UA — tricks Google Drive into serving video without "virus scan" wall
+    private static final String DESKTOP_UA =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                    + "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     @SuppressLint("SetJavaScriptEnabled")
     private void setupPlayer() {
@@ -65,11 +80,36 @@ public class VideoActivity extends AppCompatActivity {
         s.setSupportZoom(false);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setAllowFileAccess(true);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        // Spoof desktop Chrome to bypass Google Drive virus scan interstitial
+        s.setUserAgentString(DESKTOP_UA);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(View.GONE);
+                // Inject JS to auto-click "Download anyway" if virus scan page appears
+                view.evaluateJavascript(
+                        "(function(){var b=document.getElementById('uc-download-link');" +
+                                "if(b)b.click();})()", null);
+            }
+
+            // Strip X-Requested-With header — Google uses it to detect WebView
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view,
+                                                              WebResourceRequest request) {
+                return super.shouldInterceptRequest(view, request);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                // Keep all Google Drive navigation in-app
+                if (url.contains("drive.google.com") || url.contains("accounts.google.com")
+                        || url.contains("docs.google.com")) {
+                    return false;
+                }
+                return false;
             }
 
             @Override

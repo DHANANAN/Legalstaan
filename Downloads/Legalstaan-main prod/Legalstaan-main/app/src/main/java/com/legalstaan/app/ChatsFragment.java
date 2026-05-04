@@ -3,6 +3,7 @@ package com.legalstaan.app;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,29 +30,16 @@ import java.util.concurrent.Executors;
 
 public class ChatsFragment extends Fragment {
 
+    private static final String TAG = "RutuAI";
     private static final String GEMINI_KEY = "AIzaSyCF2XJu2E68Tiuifh6sGBnsQMIrZSNPxF0";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + GEMINI_KEY;
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY;
 
     private static final String SYSTEM_PROMPT =
-            "You are Rutu AI, the intelligent legal-education assistant for Legalstaan — " +
-            "a free legal education platform for law students, especially across Africa and South Asia. " +
-            "You have deep knowledge about: " +
-            "1) The Legalstaan app: 8 subjects with 100+ video lectures including Trademark Law (17 lectures), " +
-            "Patent Law (35 lectures), Copyright Law (10 lectures), Design Act 2000 (8 lectures), " +
-            "International Conventions & Treaties (7 lectures), Plant Variety & Farmers Rights Act (1 lecture), " +
-            "Constitutional Law (1 lecture), Administrative Law (4 lectures). " +
-            "Faculty include Abhishek Sir, Aryaa Anuj Sir, Arya Verma Sir, Rohit Sir, Nikhil Sir, " +
-            "Alfaz Mushriff Sir, Susen Kamble Sir, Ajay Jatav Sir, Gautam Sir, and Eshan Sir. " +
-            "2) Legal topics: Constitutional Law, Criminal Law (IPC/BNS), Civil Procedure (CPC), " +
-            "Contract Law, Torts, IPR (Patent, Trademark, Copyright, Design, Plant Variety), " +
-            "Administrative Law, International Law and treaties. " +
-            "3) African legal context: customary law, ECOWAS, African Union law, comparative law, " +
-            "legal aid systems, access to justice challenges in Africa. " +
-            "4) Law school preparation, moot court, legal research, case analysis, exam strategy. " +
-            "Contact: contactlegalstaan@gmail.com | Instagram: @legalstaan | YouTube: @legalstaanofficial. " +
-            "Be helpful, warm, concise, and encouraging. When giving legal info, add a brief disclaimer " +
-            "that it is for educational purposes only.";
+            "You are an intelligent educational assistant. " +
+            "You are designed to help students understand complex academic topics, summarize legal and general knowledge, and provide accurate, unbiased explanations. " +
+            "Always be concise, professional, and directly answer the user's queries. " +
+            "You have no specific affiliation.";
 
     private final List<ChatMessage> messages = new ArrayList<>();
     private ChatAdapter adapter;
@@ -150,7 +138,7 @@ public class ChatsFragment extends Fragment {
                         String line;
                         while ((line = br.readLine()) != null) sb.append(line);
                     }
-                    JSONObject resp       = new JSONObject(sb.toString());
+                    JSONObject resp = new JSONObject(sb.toString());
                     String aiText = resp.getJSONArray("candidates")
                             .getJSONObject(0)
                             .getJSONObject("content")
@@ -165,16 +153,26 @@ public class ChatsFragment extends Fragment {
                         }
                     });
                 } else {
-                    throw new Exception("HTTP " + code);
+                    // Read error body for better diagnostics
+                    StringBuilder errSb = new StringBuilder();
+                    try (BufferedReader br = new BufferedReader(
+                            new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = br.readLine()) != null) errSb.append(line);
+                    } catch (Exception ignored) {}
+                    throw new Exception("HTTP " + code + ": " + errSb.toString());
                 }
                 conn.disconnect();
 
             } catch (Exception e) {
+                Log.e(TAG, "Gemini call failed", e);
+                String raw = e.getMessage() != null ? e.getMessage() : e.toString();
+                final String friendly = explainGeminiError(raw);
                 mainHandler.post(() -> {
                     if (isAdded()) {
                         tvStatus.setText("Gemini mode · AI+Web active");
                         addAiMessage(getLocalResponse(userMessage) +
-                                "\n\n(Note: Couldn't reach Gemini — using local knowledge.)");
+                                "\n\n⚠️ Gemini unavailable — using local knowledge.\n" + friendly);
                     }
                 });
             }
@@ -202,10 +200,10 @@ public class ChatsFragment extends Fragment {
             return "Hello! Great to have you here 😊 Ask me about Legalstaan courses, legal topics, or anything to help your studies!";
 
         if (has(q, "who are you", "what are you", "rutu", "introduce yourself"))
-            return "I'm Rutu AI, your Legalstaan legal-education assistant!\n\nI can help with:\n• Navigating the app (courses, live classes, mock tests)\n• Legal concepts (IPR, Constitutional, Criminal Law, etc.)\n• African and international law\n• Study tips & exam prep\n\nToggle \"AI+Web\" for Gemini-powered deep answers!";
+            return "I'm Rutu AI, your Legalstaan legal-education assistant!\n\nI can help with:\n• Navigating the app (courses, live classes, mock tests)\n• Legal concepts (IPR, Constitutional, Criminal Law, etc.)\n• International law\n• Study tips & exam prep\n\nToggle \"AI+Web\" for Gemini-powered deep answers!";
 
         if (has(q, "what can you", "help me with", "capabilities", "features"))
-            return "I can help you with:\n• App navigation and features\n• IPR topics: Trademark, Patent, Copyright, Design, Plant Variety\n• Constitutional Law, Criminal Law (IPC/BNS), Administrative Law\n• CPC, Contract, Torts\n• African & international legal frameworks\n• Exam strategy and study tips\n\nFor deeper research, turn on AI+Web!";
+            return "I can help you with:\n• App navigation and features\n• IPR topics: Trademark, Patent, Copyright, Design, Plant Variety\n• Constitutional Law, Criminal Law (IPC/BNS), Administrative Law\n• CPC, Contract, Torts\n• International legal frameworks\n• Exam strategy and study tips\n\nFor deeper research, turn on AI+Web!";
 
         if (has(q, "trademark", "brand", "mark"))
             return "Trademark Law has 17 lectures on Legalstaan!\n\nKey topics:\n• Definition & types of marks\n• Registration process (TM-A, TM-O forms)\n• Passing off vs. infringement\n• Distinctiveness & absolute grounds for refusal\n• International registration (Madrid Protocol)\n\nGo to Courses → Trademark Law to start.";
@@ -234,8 +232,6 @@ public class ChatsFragment extends Fragment {
         if (has(q, "plant variety", "farmer", "pvp", "seed", "breeder"))
             return "Plant Variety & Farmers Rights Act:\n• Rights of plant breeders vs. farmers' traditional rights\n• UPOV Convention & India's sui generis system\n• Protection of existing varieties\n• Essential Deposit requirement\n\nAvailable in Courses!";
 
-        if (has(q, "africa", "african", "ecowas", "african union", "au law", "customary"))
-            return "African Legal Context:\n• African Union frameworks & ECOWAS Treaty\n• African Charter on Human & Peoples' Rights\n• Customary law systems and their interaction with statutory law\n• Access to justice challenges\n• Colonial legal heritage (common law & civil law countries)\n\nFor deep analysis, toggle AI+Web!";
 
         if (has(q, "ipc", "criminal", "bns", "section 302", "murder", "theft", "offence"))
             return "Criminal Law (IPC/BNS) fundamentals:\n• General exceptions: mistake, necessity, private defence\n• Attempt vs. abetment\n• Offences against the person (murder, culpable homicide)\n• Property offences (theft, extortion, dacoity)\n• BNS 2023 reforms and key changes from IPC\n\nCheck Courses for full lectures!";
@@ -302,6 +298,24 @@ public class ChatsFragment extends Fragment {
             if (input.contains(kw)) return true;
         }
         return false;
+    }
+
+    /** Translate cryptic Gemini errors into actionable guidance. */
+    private String explainGeminiError(String raw) {
+        if (raw == null) return "Reason: unknown.";
+        String low = raw.toLowerCase();
+        if (low.contains("http 429") || low.contains("resource_exhausted") || low.contains("quota"))
+            return "Reason: Free-tier quota exhausted (15 req/min, 1500/day on gemini-2.0-flash).\nFix: wait 1 min, or upgrade your Google AI Studio billing.";
+        if (low.contains("http 400") && low.contains("api key not valid"))
+            return "Reason: API key rejected.\nFix: regenerate at aistudio.google.com/apikey and update GEMINI_KEY in ChatsFragment.java.";
+        if (low.contains("http 403") || low.contains("permission_denied"))
+            return "Reason: Key blocked or referrer restriction.\nFix: in Google Cloud Console → Credentials, ensure the key has no application restriction (or allow Android package com.legalstaan.app).";
+        if (low.contains("http 404") || low.contains("model"))
+            return "Reason: Model name invalid (gemini-2.0-flash may have moved).\nFix: try gemini-1.5-flash or gemini-flash-latest in GEMINI_URL.";
+        if (low.contains("unable to resolve host") || low.contains("failed to connect")
+                || low.contains("timeout") || low.contains("etimedout"))
+            return "Reason: No network or DNS failure.\nFix: check Wi-Fi / mobile data.";
+        return "Reason: " + raw;
     }
 
     private String escapeJson(String text) {
