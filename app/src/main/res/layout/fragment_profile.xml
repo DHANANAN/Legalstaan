@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:text="© 2026 Legalstaan · v1.27"
+            android:text="© 2026 Legalstaan · v1.28"
             android:textSize="11sp"
             android:textColor="@color/colorSecondaryText"
             android:layout_marginBottom="16dp" />

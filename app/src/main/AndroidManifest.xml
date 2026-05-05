@@ -65,6 +65,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".JoinBatchActivity"
+            android:label="Join New Batch"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".QuizActivity"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 

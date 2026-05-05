@@ -49,6 +49,15 @@ public class CoursesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Banner at the top of the tab — paid CLAT PG batch enrollment.
+        // Free content below remains free; this is a separate optional path.
+        View joinBatchCard = view.findViewById(R.id.card_join_batch);
+        if (joinBatchCard != null) {
+            joinBatchCard.setOnClickListener(v ->
+                    startActivity(new Intent(requireActivity(), JoinBatchActivity.class)));
+        }
+
         loadSubjects();
 
         // Build the flat list: header + items for each section

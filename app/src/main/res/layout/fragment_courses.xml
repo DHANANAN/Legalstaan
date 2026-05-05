@@ -6,6 +6,81 @@
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
+    <!-- CLAT PG 2024 enrollment banner — taps into JoinBatchActivity -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_join_batch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardBackgroundColor="@color/primaryColor"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp">
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="CLAT PG 2024 Champions"
+                android:scaleType="centerCrop"
+                android:src="@drawable/join_batch_header" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.06"
+                    android:text="JOIN NEW BATCH"
+                    android:textAllCaps="true"
+                    android:textColor="@color/accentColor"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="CLAT PG 2024 Champions Course"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="₹6,500 with NGO supporter coupon"
+                    android:textColor="#CCCCCC"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Open"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="@color/accentColor" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- Search bar (decorative) -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
