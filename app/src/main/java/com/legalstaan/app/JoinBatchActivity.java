@@ -28,8 +28,8 @@ import java.util.Random;
  *
  * Free content (lectures, materials, Question Bank) is unaffected — this is
  * a separate, optional path for students who want to formally join the
- * mentored batch and support the NGO. Pricing structure:
- *   ₹15,000 base − ₹8,500 NGO supporter coupon (PG2027) = ₹6,500 final.
+ * mentored batch. Pricing structure:
+ *   ₹15,000 base − ₹8,500 coupon (PG2027) = ₹6,500 final.
  *
  * Payment flow: scan the bundled UPI QR (krishnashelkeintern@oksbi), then
  * email the screenshot to Krishna Sir for confirmation.
@@ -146,7 +146,7 @@ public class JoinBatchActivity extends AppCompatActivity {
             etCoupon.setText("");
             etCoupon.setError(null);
         }
-        tvCouponHint.setText("Tip: enter PG2027 to unlock the NGO supporter discount");
+        tvCouponHint.setText("Tip: enter coupon code PG2027 to unlock the discount");
     }
 
     /**
@@ -220,7 +220,7 @@ public class JoinBatchActivity extends AppCompatActivity {
     private void emailPaymentProof() {
         String subject = "Batch enrollment — payment proof";
         String priceLine = couponApplied
-                ? "₹" + PRICE_DISCOUNTED + " (with NGO supporter coupon PG2027)"
+                ? "₹" + PRICE_DISCOUNTED + " (with coupon PG2027)"
                 : "₹" + PRICE_BASE;
         String body    = "Hello " + CONTACT_NAME + ",\n\n"
                 + "I have completed the UPI payment for the CLAT PG 2027 Champions "

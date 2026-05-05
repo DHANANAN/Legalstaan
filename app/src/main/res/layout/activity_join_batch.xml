@@ -103,7 +103,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:layout_weight="1"
-                                android:text="NGO Supporter Coupon"
+                                android:text="Coupon PG2027 applied"
                                 android:textColor="@color/colorBodyText"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -238,7 +238,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:gravity="center"
-                            android:text="Tip: enter PG2027 to unlock the NGO supporter discount"
+                            android:text="Tip: enter coupon code PG2027 to unlock the discount"
                             android:textColor="@color/colorSecondaryText"
                             android:textSize="11sp"
                             android:textStyle="italic" />
