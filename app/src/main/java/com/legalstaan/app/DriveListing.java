@@ -13,9 +13,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,6 +46,28 @@ public class DriveListing {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     /**
+     * Per-folder cache so repeated opens during a heavy traffic spike don't
+     * each trigger a Drive API hit. Keyed by root folder ID; entries expire
+     * after 10 minutes. With ~1000 students opening the same subject in one
+     * session, this collapses the load on the Drive API quota dramatically.
+     */
+    private static final long CACHE_TTL_MS = 10L * 60L * 1000L; // 10 min
+    private static final Map<String, CacheEntry> CACHE =
+            Collections.synchronizedMap(new HashMap<>());
+
+    private static final class CacheEntry {
+        final long writtenAt;
+        final List<VideoItem> items;
+        CacheEntry(List<VideoItem> items) {
+            this.writtenAt = System.currentTimeMillis();
+            this.items = items;
+        }
+        boolean isFresh() {
+            return System.currentTimeMillis() - writtenAt < CACHE_TTL_MS;
+        }
+    }
+
+    /**
      * Walk {@code folderId} breadth-first, return every video + PDF found in
      * the entire tree. Sub-folders themselves are not included in the result.
      * The faculty's folder structure is irrelevant to the student.
@@ -56,6 +81,13 @@ public class DriveListing {
         }
         if (folderId == null || folderId.isEmpty()) {
             MAIN.post(() -> callback.onError("No folder linked for this subject."));
+            return;
+        }
+
+        // Cache hit — answer instantly, skip the Drive API entirely.
+        CacheEntry hit = CACHE.get(folderId);
+        if (hit != null && hit.isFresh()) {
+            MAIN.post(() -> callback.onResult(hit.items));
             return;
         }
 
@@ -88,6 +120,9 @@ public class DriveListing {
                     }
                 });
 
+                // Cache the result so the next ~1000 students reading the same
+                // subject during a peak window don't each burn an API quota unit.
+                CACHE.put(folderId, new CacheEntry(files));
                 MAIN.post(() -> callback.onResult(files));
 
             } catch (DriveError e) {
@@ -112,20 +147,37 @@ public class DriveListing {
                 + "&includeItemsFromAllDrives=true"
                 + "&key=" + URLEncoder.encode(apiKey, "UTF-8");
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setConnectTimeout(15000);
-        conn.setReadTimeout(20000);
+        // Retry transient 429/5xx with exponential backoff so a brief Drive
+        // hiccup during a traffic spike doesn't surface as a hard error.
+        String body = null;
+        int lastCode = 0;
+        String lastErr = "";
+        long backoff = 600L;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(20000);
 
-        int code = conn.getResponseCode();
-        if (code != 200) {
-            String err = readStream(conn.getErrorStream());
-            Log.e(TAG, "HTTP " + code + ": " + err);
-            throw new DriveError(translateError(code, err));
+            int code = conn.getResponseCode();
+            if (code == 200) {
+                body = readStream(conn.getInputStream());
+                conn.disconnect();
+                break;
+            }
+            lastCode = code;
+            lastErr  = readStream(conn.getErrorStream());
+            conn.disconnect();
+            Log.w(TAG, "HTTP " + code + " (attempt " + (attempt + 1) + "): " + lastErr);
+
+            // Only retry on 429 / 5xx — 4xx other than 429 won't get better.
+            if (code != 429 && code < 500) break;
+            try { Thread.sleep(backoff); } catch (InterruptedException ignored) {}
+            backoff *= 2;
         }
-
-        String body = readStream(conn.getInputStream());
-        conn.disconnect();
+        if (body == null) {
+            throw new DriveError(translateError(lastCode, lastErr));
+        }
 
         JSONObject root  = new JSONObject(body);
         JSONArray  files = root.optJSONArray("files");

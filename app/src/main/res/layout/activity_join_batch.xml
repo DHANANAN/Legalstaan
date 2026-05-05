@@ -22,283 +22,395 @@
         android:layout_height="match_parent"
         android:fillViewport="true">
 
-        <LinearLayout
+        <!-- Outer FrameLayout so the glitter overlay can sit over the pricing card -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="32dp">
+            android:layout_height="wrap_content">
 
-            <!-- Hero header — CLAT PG 2024 Champions banner, bundled in res/drawable -->
-            <ImageView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:contentDescription="CLAT PG 2024 Champions Preparation Course"
-                android:src="@drawable/join_batch_header" />
+                android:orientation="vertical"
+                android:paddingBottom="32dp">
 
-            <!-- Pricing card — strikethrough on MRP, coupon callout, final price -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/colorCardStroke"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
+                <!-- Hero header — CLAT PG 2027 Champions banner, bundled in res/drawable -->
+                <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:adjustViewBounds="true"
+                    android:contentDescription="CLAT PG 2027 Champions Preparation Course"
+                    android:src="@drawable/join_batch_header" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:letterSpacing="0.08"
-                        android:text="ENROLLMENT FEE"
-                        android:textAllCaps="true"
-                        android:textColor="@color/colorSecondaryText"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                <!-- Pricing card — coupon input flow drives the discount -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_pricing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/colorSurface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/colorCardStroke"
+                    app:strokeWidth="1dp">
 
-                    <!-- MRP, struck through -->
-                    <TextView
-                        android:id="@+id/tv_mrp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="₹15,000"
-                        android:textColor="@color/colorSecondaryText"
-                        android:textSize="18sp" />
-
-                    <!-- Coupon row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.08"
+                            android:text="ENROLLMENT FEE"
+                            android:textAllCaps="true"
+                            android:textColor="@color/colorSecondaryText"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <!-- MRP — strikethrough applied programmatically once coupon applies -->
+                        <TextView
+                            android:id="@+id/tv_mrp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="₹15,000"
+                            android:textColor="@color/colorSecondaryText"
+                            android:textSize="18sp" />
+
+                        <!-- Discount row — hidden until PG2027 is applied -->
+                        <LinearLayout
+                            android:id="@+id/row_discount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:contentDescription="Coupon"
+                                android:src="@android:drawable/ic_menu_save"
+                                app:tint="@color/accentColor" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:text="NGO Supporter Coupon"
+                                android:textColor="@color/colorBodyText"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="−₹8,500"
+                                android:textColor="#1B5E20"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Coupon input — visible until applied, then replaced by ✓ pill -->
+                        <LinearLayout
+                            android:id="@+id/row_coupon_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="Enter coupon code"
+                                app:boxStrokeColor="@color/primaryColor"
+                                app:hintTextColor="@color/colorSecondaryText">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/et_coupon"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="textCapCharacters|textNoSuggestions"
+                                    android:maxLength="16"
+                                    android:textColor="@color/colorBodyText"
+                                    android:textSize="15sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_apply_coupon"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:backgroundTint="@color/accentColor"
+                                android:text="Apply"
+                                android:textColor="@color/primaryColor"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Applied pill — replaces the input row once a valid coupon is entered -->
+                        <LinearLayout
+                            android:id="@+id/row_coupon_applied"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:background="@drawable/coupon_applied_bg"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="12dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✓"
+                                android:textColor="#1B5E20"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_coupon_applied_label"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:text="PG2027 applied — ₹8,500 off"
+                                android:textColor="#1B5E20"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_coupon_remove"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="4dp"
+                                android:text="Remove"
+                                android:textColor="#1B5E20"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="14dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@color/colorDivider" />
+
+                        <!-- Final price — initially equals MRP, drops to ₹6,500 with animation on apply -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="You pay"
+                                android:textColor="@color/colorBodyText"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_final_price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹15,000"
+                                android:textColor="@color/primaryColor"
+                                android:textSize="28sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_coupon_hint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:text="Tip: enter PG2027 to unlock the NGO supporter discount"
+                            android:textColor="@color/colorSecondaryText"
+                            android:textSize="11sp"
+                            android:textStyle="italic" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Section header above QR -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:letterSpacing="0.06"
+                    android:text="PAY VIA UPI"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorSecondaryText"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- QR card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    app:cardBackgroundColor="@color/colorSurface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/colorCardStroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Coupon"
-                            android:src="@android:drawable/ic_menu_save"
-                            app:tint="@color/accentColor" />
+                            android:layout_width="280dp"
+                            android:layout_height="380dp"
+                            android:adjustViewBounds="true"
+                            android:contentDescription="UPI QR — krishnashelkeintern@oksbi"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/join_batch_qr" />
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:text="NGO Supporter Coupon"
-                            android:textColor="@color/colorBodyText"
-                            android:textSize="14sp"
+                            android:layout_marginTop="6dp"
+                            android:text="Scan and Pay"
+                            android:textColor="@color/colorHeadingText"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="−₹8,500"
-                            android:textColor="#1B5E20"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:layout_marginTop="2dp"
+                            android:text="Open any UPI app and scan this code"
+                            android:textColor="@color/colorSecondaryText"
+                            android:textSize="12sp" />
+
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@color/colorDivider" />
+                <!-- Section header above contact -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:letterSpacing="0.06"
+                    android:text="AFTER PAYMENT"
+                    android:textAllCaps="true"
+                    android:textColor="@color/colorSecondaryText"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                    <!-- Final price -->
+                <!-- Contact card — email screenshot to Krishna Sir -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    app:cardBackgroundColor="@color/colorSurface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/colorCardStroke"
+                    app:strokeWidth="1dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="You pay"
+                            android:lineSpacingExtra="2dp"
+                            android:text="Send your payment screenshot, full name, and phone number to confirm enrollment in the next batch."
                             android:textColor="@color/colorBodyText"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:textSize="14sp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@color/colorDivider" />
 
                         <TextView
-                            android:id="@+id/tv_final_price"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="₹6,500"
-                            android:textColor="@color/primaryColor"
-                            android:textSize="28sp"
+                            android:text="Krishna Sir"
+                            android:textColor="@color/colorHeadingText"
+                            android:textSize="15sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="krishnashelkeintern@gmail.com"
+                            android:textColor="@color/colorSecondaryText"
+                            android:textSize="13sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_email_proof"
+                            style="@style/Widget.MaterialComponents.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:backgroundTint="@color/primaryColor"
+                            android:text="Email payment proof"
+                            android:textColor="@color/white"
+                            app:icon="@android:drawable/sym_action_email"
+                            app:iconTint="@color/white" />
+
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Section header above QR -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:letterSpacing="0.06"
-                android:text="PAY VIA UPI"
-                android:textAllCaps="true"
-                android:textColor="@color/colorSecondaryText"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <!-- QR card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
-                app:cardBackgroundColor="@color/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/colorCardStroke"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    android:padding="14dp">
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="The free lectures, study material, and Question Bank in this app remain free for everyone — this batch is for students who want personal mentorship."
+                    android:textColor="@color/colorSecondaryText"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
 
-                    <ImageView
-                        android:layout_width="280dp"
-                        android:layout_height="380dp"
-                        android:adjustViewBounds="true"
-                        android:contentDescription="UPI QR — krishnashelkeintern@oksbi"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/join_batch_qr" />
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="Scan and Pay"
-                        android:textColor="@color/colorHeadingText"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Open any UPI app and scan this code"
-                        android:textColor="@color/colorSecondaryText"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Section header above contact -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
-                android:letterSpacing="0.06"
-                android:text="AFTER PAYMENT"
-                android:textAllCaps="true"
-                android:textColor="@color/colorSecondaryText"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <!-- Contact card — email screenshot to Abhishek Yadav -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Glitter / sparkle overlay — particles spawned programmatically on apply -->
+            <FrameLayout
+                android:id="@+id/glitter_overlay"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
-                app:cardBackgroundColor="@color/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/colorCardStroke"
-                app:strokeWidth="1dp">
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:focusable="false" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+        </FrameLayout>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:lineSpacingExtra="2dp"
-                        android:text="Send your payment screenshot, full name, and phone number to confirm enrollment in the next batch."
-                        android:textColor="@color/colorBodyText"
-                        android:textSize="14sp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@color/colorDivider" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Abhishek Yadav"
-                        android:textColor="@color/colorHeadingText"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="abhi635611@gmail.com"
-                        android:textColor="@color/colorSecondaryText"
-                        android:textSize="13sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_email_proof"
-                        style="@style/Widget.MaterialComponents.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:backgroundTint="@color/primaryColor"
-                        android:text="Email payment proof"
-                        android:textColor="@color/white"
-                        app:icon="@android:drawable/sym_action_email"
-                        app:iconTint="@color/white" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="14dp"
-                android:gravity="center"
-                android:lineSpacingExtra="2dp"
-                android:text="The free lectures, study material, and Question Bank in this app remain free for everyone — this batch is for students who want personal mentorship."
-                android:textColor="@color/colorSecondaryText"
-                android:textSize="12sp"
-                android:textStyle="italic" />
-
-        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
