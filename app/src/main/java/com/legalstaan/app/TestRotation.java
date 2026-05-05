@@ -32,7 +32,10 @@ public class TestRotation {
     private static final int QUESTIONS_PER_SET = 15;
 
     /** How many questions in the combined all-subjects daily test. */
-    private static final int COMBINED_QUESTIONS = 25;
+    private static final int COMBINED_QUESTIONS = 50;
+
+    /** Time limit (minutes) for the combined daily test. */
+    private static final int COMBINED_DURATION_MIN = 60;
 
     /** Wall-clock minute at which the morning slot starts (06:00 IST). */
     public static final int MORNING_HOUR = 6;
@@ -105,8 +108,9 @@ public class TestRotation {
         rotated.add(new QuestionBank.TestSet(
                 "combined_" + currentSlotKey(),
                 "Daily Combined Test · " + currentSlot().label,
-                COMBINED_QUESTIONS + " questions • all subjects • " + formatTimeUntilNextSlot(),
-                30,
+                COMBINED_QUESTIONS + " questions • " + COMBINED_DURATION_MIN
+                        + " min • all subjects • " + formatTimeUntilNextSlot(),
+                COMBINED_DURATION_MIN,
                 pickRandom(all, COMBINED_QUESTIONS, seed)));
 
         // 2) Per-subject rotated sets.

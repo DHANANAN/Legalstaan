@@ -36,7 +36,10 @@ public class QuestionResultActivity extends AppCompatActivity {
 
         String testId = getIntent().getStringExtra(EXTRA_TEST_ID);
         int[] answers = getIntent().getIntArrayExtra(EXTRA_ANSWERS);
-        QuestionBank.TestSet t = QuestionBank.byId(testId);
+        // Same lookup order as QuestionRunnerActivity — slot-rotated IDs
+        // (e.g. "combined_20260505-MORNING") aren't in the static bank.
+        QuestionBank.TestSet t = TestRotation.bySlotId(testId);
+        if (t == null) t = QuestionBank.byId(testId);
         if (t == null || answers == null) { finish(); return; }
 
         int correct = 0, attempted = 0;
@@ -50,11 +53,21 @@ public class QuestionResultActivity extends AppCompatActivity {
         int wrong = attempted - correct;
         float pct = total == 0 ? 0 : (correct * 100f) / total;
 
+        int skipped = total - attempted;
+
         ((TextView) findViewById(R.id.tv_score)).setText(correct + " / " + total);
         ((TextView) findViewById(R.id.tv_pct)).setText(String.format("%.0f%%", pct));
-        ((TextView) findViewById(R.id.tv_breakdown))
-                .setText("Correct: " + correct + "    Wrong: " + wrong + "    Skipped: " + (total - attempted));
         ((TextView) findViewById(R.id.tv_test_title)).setText(t.title);
+
+        // Pie chart + legend numbers
+        PieChartView pie = findViewById(R.id.pie_chart);
+        if (pie != null) pie.setData(correct, wrong, skipped);
+        TextView lc = findViewById(R.id.tv_legend_correct);
+        TextView lw = findViewById(R.id.tv_legend_wrong);
+        TextView ls = findViewById(R.id.tv_legend_skipped);
+        if (lc != null) lc.setText(String.valueOf(correct));
+        if (lw != null) lw.setText(String.valueOf(wrong));
+        if (ls != null) ls.setText(String.valueOf(skipped));
 
         // Award XP & streak
         int xp = correct * 10 + (correct == total ? 25 : 0);
