@@ -14,6 +14,7 @@ local.properties
 *.jks
 *.keystore
 release-key.jks
+keystore.properties
 
 # Firebase config — contains API keys; PUBLIC for the Android client by design,
 # but we keep it out of the public repo so anyone wanting to fork must wire up

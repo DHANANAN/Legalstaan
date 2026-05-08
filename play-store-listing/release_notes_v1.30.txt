@@ -1,0 +1,5 @@
+v1.30 — UI polish, video player improvements, bug fixes
+- Refined navy + gold theme across the app
+- Smoother video playback for Google Drive lectures
+- Live class push notifications via Firebase Cloud Messaging
+- Faster startup and improved community chat reliability

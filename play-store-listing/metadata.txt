@@ -1,0 +1,91 @@
+============================================
+  LEGALSTAAN — PLAY STORE LISTING METADATA
+============================================
+
+App name:          Legalstaan
+Package name:      com.legalstaan.app
+Version name:      1.30
+Version code:      31
+Default language:  English (United States)
+App or game:       App
+Free or paid:      Free
+Category:          Education
+Tags:              Education, Legal, Law, CLAT, Judiciary, Mock Tests
+
+============================================
+  EMAIL — USE THIS EVERYWHERE
+============================================
+
+Developer / Play Console login:  krishnashelkeintern@gmail.com
+Store-listing contact email:     krishnashelkeintern@gmail.com
+Support email:                   krishnashelkeintern@gmail.com
+Privacy contact email:           krishnashelkeintern@gmail.com
+Account-deletion email:          krishnashelkeintern@gmail.com
+Content-rating questionnaire:    krishnashelkeintern@gmail.com
+
+(Do NOT use satherutuja2398@gmail.com anywhere in Play Console — that is a separate personal account.)
+
+============================================
+  URLS — ALL ON legalstaan.com
+============================================
+
+Website                      https://legalstaan.com
+Privacy policy               https://legalstaan.com/privacy
+Terms of Service             https://legalstaan.com/terms
+Support / Help               https://legalstaan.com/support
+Account & data deletion      https://legalstaan.com/account-deletion
+
+============================================
+  PLAY CONSOLE FIELD MAPPING
+============================================
+
+Field                                Value
+-----------------------------------  ----------------------------------------------------
+App name                             Legalstaan
+Short description                    (paste short_description.txt)
+Full description                     (paste full_description.txt)
+App icon                             (upload from i.ibb.co URL below)
+Feature graphic                      (upload from i.ibb.co URL below)
+Phone screenshots                    (upload all 5 from i.ibb.co URLs below)
+App category                         Education
+Tags                                 Education, Legal, Law
+Email                                krishnashelkeintern@gmail.com
+Website                              https://legalstaan.com
+Phone                                (optional, leave blank)
+Privacy policy URL                   https://legalstaan.com/privacy
+
+Data Safety -> Account-deletion URL  https://legalstaan.com/account-deletion
+
+============================================
+  ASSET REFERENCE URLS (already uploaded)
+============================================
+
+App icon (512x512):
+  https://i.ibb.co/pj8RBzJ4/R05i-Av-U7.jpg
+
+Feature graphic (1024x500):
+  https://i.ibb.co/vxJ2rQ7h/pgb-H2-QM8.jpg
+
+Phone screenshots:
+  1. https://i.ibb.co/XZ4NXyQx/ahlq-NIv0.jpg
+  2. https://i.ibb.co/Nd46w56P/kyoh7l-II.jpg
+  3. https://i.ibb.co/fzgQ9fmC/NGlo0jt-U.jpg
+  4. https://i.ibb.co/MkTdDFZ8/La-T5-J3-Ap.jpg
+  5. https://i.ibb.co/CKf6SVWY/j5sxv-Vd-N.jpg
+
+============================================
+  UPLOAD-KEY FINGERPRINTS (for Firebase Console)
+============================================
+
+SHA-1:   A2:CE:AA:D9:CE:99:E2:EB:AA:CA:1F:9F:64:0B:A6:4E:EC:5C:BB:AD
+SHA-256: 0C:6C:02:DD:AA:28:32:93:F8:05:BA:73:29:6D:E1:4D:08:27:26:45:56:64:58:6D:C2:C9:49:8B:8A:68:51:A8
+Alias:   release-key
+Valid:   until 2053-09-11
+
+============================================
+  AAB OUTPUT
+============================================
+
+Path: app\build\outputs\bundle\release\app-release.aab
+Size: 9.74 MB  (limit: 150 MB)
+Signed: yes (jar verified)
