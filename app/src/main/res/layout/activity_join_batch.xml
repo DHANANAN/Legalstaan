@@ -15,7 +15,7 @@
         app:navigationIcon="?attr/homeAsUpIndicator"
         app:navigationIconTint="@color/white"
         app:titleTextColor="@color/white"
-        app:title="Join New Batch" />
+        app:title="Legalstaan Course" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
-                    android:contentDescription="CLAT PG 2027 Champions Preparation Course"
+                    android:contentDescription="Legalstaan Course"
                     android:src="@drawable/join_batch_header" />
 
                 <!-- Pricing card — coupon input flow drives the discount -->
@@ -65,10 +65,19 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:letterSpacing="0.08"
-                            android:text="ENROLLMENT FEE"
+                            android:text="COURSE FEE"
                             android:textAllCaps="true"
                             android:textColor="@color/colorSecondaryText"
                             android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Legalstaan Course"
+                            android:textColor="@color/colorHeadingText"
+                            android:textSize="17sp"
                             android:textStyle="bold" />
 
                         <!-- MRP — strikethrough applied programmatically once coupon applies -->
@@ -77,7 +86,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="₹15,000"
+                            android:text="₹51"
                             android:textColor="@color/colorSecondaryText"
                             android:textSize="18sp" />
 
@@ -103,7 +112,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:layout_weight="1"
-                                android:text="Coupon PG2027 applied"
+                                android:text="Coupon FLASHSALE applied"
                                 android:textColor="@color/colorBodyText"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -111,7 +120,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="−₹8,500"
+                                android:text="−₹40"
                                 android:textColor="#1B5E20"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -183,7 +192,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:layout_weight="1"
-                                android:text="PG2027 applied — ₹8,500 off"
+                                android:text="FLASHSALE applied — ₹40 off"
                                 android:textColor="#1B5E20"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
@@ -226,7 +235,7 @@
                                 android:id="@+id/tv_final_price"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="₹15,000"
+                                android:text="₹51"
                                 android:textColor="@color/primaryColor"
                                 android:textSize="28sp"
                                 android:textStyle="bold" />
@@ -238,13 +247,56 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:gravity="center"
-                            android:text="Tip: enter coupon code PG2027 to unlock the discount"
+                            android:text="Tip: enter coupon code FLASHSALE to unlock the discount"
                             android:textColor="@color/colorSecondaryText"
                             android:textSize="11sp"
                             android:textStyle="italic" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <!-- Payment-gateway CTA — reveals the QR section below on tap.
+                     Keeping the QR hidden until the user explicitly proceeds
+                     gives the screen a portal-style feel rather than an open
+                     payment page. -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_continue_payment"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:layout_marginTop="18dp"
+                    android:backgroundTint="@color/primaryColor"
+                    android:letterSpacing="0.04"
+                    android:text="Continue to Payment"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="14dp"
+                    app:icon="@android:drawable/ic_lock_lock"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/accentColor" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="Secure UPI payment • Powered by Legalstaan"
+                    android:textColor="@color/colorSecondaryText"
+                    android:textSize="11sp" />
+
+                <!-- Hidden payment gateway section — revealed by the CTA above -->
+                <LinearLayout
+                    android:id="@+id/section_payment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                 <!-- Section header above QR -->
                 <TextView
@@ -395,10 +447,13 @@
                     android:layout_marginTop="14dp"
                     android:gravity="center"
                     android:lineSpacingExtra="2dp"
-                    android:text="The free lectures, study material, and Question Bank in this app remain free for everyone — this batch is for students who want personal mentorship."
+                    android:text="The free lectures, study material, and Question Bank in this app remain free for everyone — this course is a paid add-on for students who want personal mentorship."
                     android:textColor="@color/colorSecondaryText"
                     android:textSize="12sp"
                     android:textStyle="italic" />
+
+                </LinearLayout>
+                <!-- /section_payment -->
 
             </LinearLayout>
 

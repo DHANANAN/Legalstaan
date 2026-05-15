@@ -6,7 +6,7 @@
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
-    <!-- CLAT PG 2024 enrollment banner — taps into JoinBatchActivity -->
+    <!-- Legalstaan Course test-payment banner — taps into JoinBatchActivity -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_join_batch"
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:adjustViewBounds="true"
-                android:contentDescription="CLAT PG 2027 Champions"
+                android:contentDescription="Legalstaan Course"
                 android:scaleType="centerCrop"
                 android:src="@drawable/join_batch_header" />
 
@@ -48,7 +48,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.06"
-                    android:text="JOIN NEW BATCH"
+                    android:text="ENROLL NOW · FLASH SALE"
                     android:textAllCaps="true"
                     android:textColor="@color/accentColor"
                     android:textSize="11sp"
@@ -58,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="CLAT PG 2027 Champions Course"
+                    android:text="Legalstaan Course"
                     android:visibility="visible"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
@@ -68,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="₹6,500 with coupon PG2027"
+                    android:text="₹51   ·   ₹11 with coupon FLASHSALE"
                     android:textColor="#CCCCCC"
                     android:textSize="11sp" />
             </LinearLayout>

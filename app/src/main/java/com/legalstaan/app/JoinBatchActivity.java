@@ -24,25 +24,23 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.Random;
 
 /**
- * Enrollment screen for the CLAT PG 2027 Champions batch.
+ * Test-run payment portal for the "Legalstaan Course".
  *
- * Free content (lectures, materials, Question Bank) is unaffected — this is
- * a separate, optional path for students who want to formally join the
- * mentored batch. Pricing structure:
- *   ₹15,000 base − ₹8,500 coupon (PG2027) = ₹6,500 final.
+ * Two-step gated flow so the QR isn't exposed up front:
+ *   1. Pricing card with coupon input. FLASHSALE drops ₹51 → ₹11.
+ *   2. "Continue to Payment" CTA reveals the UPI QR + post-payment contact.
  *
- * Payment flow: scan the bundled UPI QR (krishnashelkeintern@oksbi), then
- * email the screenshot to Krishna Sir for confirmation.
+ * Free content (lectures, materials, Question Bank) is unaffected.
  */
 public class JoinBatchActivity extends AppCompatActivity {
 
     private static final String CONTACT_NAME  = "Krishna Sir";
     private static final String CONTACT_EMAIL = "krishnashelkeintern@gmail.com";
 
-    private static final String COUPON_CODE      = "PG2027";
-    private static final int    PRICE_BASE       = 15000;
-    private static final int    COUPON_DISCOUNT  = 8500;
-    private static final int    PRICE_DISCOUNTED = PRICE_BASE - COUPON_DISCOUNT; // 6500
+    private static final String COUPON_CODE      = "FLASHSALE";
+    private static final int    PRICE_BASE       = 51;
+    private static final int    PRICE_DISCOUNTED = 11;
+    private static final int    COUPON_DISCOUNT  = PRICE_BASE - PRICE_DISCOUNTED; // 40
 
     private TextView tvMrp;
     private TextView tvFinalPrice;
@@ -52,6 +50,8 @@ public class JoinBatchActivity extends AppCompatActivity {
     private View     rowCouponApplied;
     private TextInputEditText etCoupon;
     private MaterialButton    btnApplyCoupon;
+    private MaterialButton    btnContinueToPayment;
+    private View     paymentSection;
     private FrameLayout       glitterOverlay;
     private View     pricingCard;
 
@@ -70,20 +70,53 @@ public class JoinBatchActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        tvMrp            = findViewById(R.id.tv_mrp);
-        tvFinalPrice     = findViewById(R.id.tv_final_price);
-        tvCouponHint     = findViewById(R.id.tv_coupon_hint);
-        rowDiscount      = findViewById(R.id.row_discount);
-        rowCouponInput   = findViewById(R.id.row_coupon_input);
-        rowCouponApplied = findViewById(R.id.row_coupon_applied);
-        etCoupon         = findViewById(R.id.et_coupon);
-        btnApplyCoupon   = findViewById(R.id.btn_apply_coupon);
-        glitterOverlay   = findViewById(R.id.glitter_overlay);
-        pricingCard      = findViewById(R.id.card_pricing);
+        tvMrp                = findViewById(R.id.tv_mrp);
+        tvFinalPrice         = findViewById(R.id.tv_final_price);
+        tvCouponHint         = findViewById(R.id.tv_coupon_hint);
+        rowDiscount          = findViewById(R.id.row_discount);
+        rowCouponInput       = findViewById(R.id.row_coupon_input);
+        rowCouponApplied     = findViewById(R.id.row_coupon_applied);
+        etCoupon             = findViewById(R.id.et_coupon);
+        btnApplyCoupon       = findViewById(R.id.btn_apply_coupon);
+        btnContinueToPayment = findViewById(R.id.btn_continue_payment);
+        paymentSection       = findViewById(R.id.section_payment);
+        glitterOverlay       = findViewById(R.id.glitter_overlay);
+        pricingCard          = findViewById(R.id.card_pricing);
 
         btnApplyCoupon.setOnClickListener(v -> tryApplyCoupon());
+        btnContinueToPayment.setOnClickListener(v -> revealPaymentSection());
         findViewById(R.id.tv_coupon_remove).setOnClickListener(v -> removeCoupon());
         findViewById(R.id.btn_email_proof).setOnClickListener(v -> emailPaymentProof());
+    }
+
+    /**
+     * Smoothly reveal the QR + post-payment contact card. Keeping the QR
+     * hidden until this point gives the screen a "payment portal" feel —
+     * the user actively chooses to proceed to the gateway rather than
+     * having the UPI details exposed up front.
+     */
+    private void revealPaymentSection() {
+        if (paymentSection.getVisibility() == View.VISIBLE) {
+            paymentSection.requestFocus();
+            return;
+        }
+        btnContinueToPayment.setEnabled(false);
+        btnContinueToPayment.setText("Loading payment gateway…");
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            paymentSection.setAlpha(0f);
+            paymentSection.setTranslationY(40f);
+            paymentSection.setVisibility(View.VISIBLE);
+            paymentSection.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(420)
+                    .setInterpolator(new OvershootInterpolator(1.1f))
+                    .start();
+
+            btnContinueToPayment.setText("Payment gateway opened ↓");
+            btnContinueToPayment.setEnabled(true);
+        }, 650);
     }
 
     /** Validate the entered code; on success run the discount + glitter sequence. */
@@ -97,7 +130,7 @@ public class JoinBatchActivity extends AppCompatActivity {
         if (!COUPON_CODE.equals(entered)) {
             etCoupon.setError("That code isn't valid");
             Toast.makeText(this,
-                    "Coupon not recognised. Try PG2027.",
+                    "Coupon not recognised. Try FLASHSALE.",
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -131,7 +164,7 @@ public class JoinBatchActivity extends AppCompatActivity {
                         .scaleX(1f).scaleY(1f).setDuration(220).start())
                 .start();
 
-        tvCouponHint.setText("Discount unlocked. Scan the QR below to pay ₹6,500.");
+        tvCouponHint.setText("Discount unlocked. Tap Continue to Payment to pay ₹11.");
         playGlitter();
     }
 
@@ -146,7 +179,7 @@ public class JoinBatchActivity extends AppCompatActivity {
             etCoupon.setText("");
             etCoupon.setError(null);
         }
-        tvCouponHint.setText("Tip: enter coupon code PG2027 to unlock the discount");
+        tvCouponHint.setText("Tip: enter coupon code FLASHSALE to unlock the discount");
     }
 
     /**
@@ -218,13 +251,13 @@ public class JoinBatchActivity extends AppCompatActivity {
 
     /** Hand off to Gmail (or any mail app) with subject + body pre-filled. */
     private void emailPaymentProof() {
-        String subject = "Batch enrollment — payment proof";
+        String subject = "Legalstaan Course — payment proof";
         String priceLine = couponApplied
-                ? "₹" + PRICE_DISCOUNTED + " (with coupon PG2027)"
+                ? "₹" + PRICE_DISCOUNTED + " (with coupon FLASHSALE)"
                 : "₹" + PRICE_BASE;
         String body    = "Hello " + CONTACT_NAME + ",\n\n"
-                + "I have completed the UPI payment for the CLAT PG 2027 Champions "
-                + "Preparation Course (" + priceLine + ").\n\n"
+                + "I have completed the UPI payment for the Legalstaan Course "
+                + "(" + priceLine + ").\n\n"
                 + "Please attach your payment screenshot before sending.\n\n"
                 + "Full name: \n"
                 + "Phone number: \n"
