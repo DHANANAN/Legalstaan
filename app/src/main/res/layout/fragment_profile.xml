@@ -90,6 +90,9 @@
             android:background="@color/colorSurface"
             android:orientation="vertical">
 
+            <include layout="@layout/item_profile_row" android:id="@+id/row_payments" />
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/colorDivider" />
             <include layout="@layout/item_profile_row" android:id="@+id/row_certificates" />
             <View android:layout_width="match_parent" android:layout_height="1dp"
                 android:background="@color/colorDivider" />
@@ -148,7 +151,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
-            android:text="© 2026 Legalstaan · v1.29"
+            android:text="© 2026 Legalstaan · v1.33"
             android:textSize="11sp"
             android:textColor="@color/colorSecondaryText"
             android:layout_marginBottom="16dp" />

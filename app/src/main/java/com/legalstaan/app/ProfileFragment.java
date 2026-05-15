@@ -119,6 +119,7 @@ public class ProfileFragment extends Fragment {
             });
         }
 
+        setRowLabel(view, R.id.row_payments,     "Payments & Receipts");
         setRowLabel(view, R.id.row_certificates, "Course Certificates");
         setRowLabel(view, R.id.row_downloads,    "Offline Downloads");
         setRowLabel(view, R.id.row_free_material,"Free Study Materials");
@@ -126,6 +127,9 @@ public class ProfileFragment extends Fragment {
         setRowLabel(view, R.id.row_how_to,       "How to Use the App");
         setRowLabel(view, R.id.row_privacy,      "Privacy Policy");
         setRowLabel(view, R.id.row_sign_out,     "Sign Out");
+
+        view.findViewById(R.id.row_payments).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), PaymentsActivity.class)));
 
         view.findViewById(R.id.row_certificates).setOnClickListener(v ->
                 openInfo("Course Certificates",

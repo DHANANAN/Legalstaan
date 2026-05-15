@@ -69,6 +69,17 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".AppContentCourseActivity"
+            android:label="App Content Course"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".PaymentsActivity"
+            android:label="Payments &amp; Receipts"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".QuizActivity"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 

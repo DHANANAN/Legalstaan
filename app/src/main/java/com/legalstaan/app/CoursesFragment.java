@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -58,6 +59,12 @@ public class CoursesFragment extends Fragment {
                     startActivity(new Intent(requireActivity(), JoinBatchActivity.class)));
         }
 
+        View appContentCard = view.findViewById(R.id.card_app_content_course);
+        if (appContentCard != null) {
+            appContentCard.setOnClickListener(v ->
+                    startActivity(new Intent(requireActivity(), AppContentCourseActivity.class)));
+        }
+
         loadSubjects();
 
         // Build the flat list: header + items for each section
@@ -74,6 +81,33 @@ public class CoursesFragment extends Fragment {
         RecyclerView rv = view.findViewById(R.id.rv_subjects);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(new SectionAdapter(rows, this::openSubject));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh the App Content Course card so the lock indicator and
+        // subtitle reflect whatever payment state the user landed in
+        // (they may have just unlocked it via AppContentCourseActivity).
+        View view = getView();
+        if (view == null) return;
+        boolean paid = PaymentManager.isPaid(requireContext(),
+                PaymentManager.COURSE_APP_CONTENT);
+
+        ImageView lock = view.findViewById(R.id.iv_app_content_lock);
+        TextView  eyebrow = view.findViewById(R.id.tv_app_content_eyebrow);
+        TextView  sub = view.findViewById(R.id.tv_app_content_sub);
+        if (lock == null || eyebrow == null || sub == null) return;
+
+        if (paid) {
+            lock.setImageResource(android.R.drawable.checkbox_on_background);
+            eyebrow.setText("UNLOCKED · OPEN");
+            sub.setText("Tap to open course materials");
+        } else {
+            lock.setImageResource(android.R.drawable.ic_lock_lock);
+            eyebrow.setText("PREMIUM · LOCKED");
+            sub.setText("₹51 · ₹11 with coupon FLASHSALE");
+        }
     }
 
     private void openSubject(Subject subject) {

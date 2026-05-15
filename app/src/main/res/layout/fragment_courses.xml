@@ -6,7 +6,7 @@
     android:background="@color/colorBackground"
     android:orientation="vertical">
 
-    <!-- Legalstaan Course test-payment banner — taps into JoinBatchActivity -->
+    <!-- CLAT PG 2024 enrollment banner — taps into JoinBatchActivity -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_join_batch"
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:adjustViewBounds="true"
-                android:contentDescription="Legalstaan Course"
+                android:contentDescription="CLAT PG 2027 Champions"
                 android:scaleType="centerCrop"
                 android:src="@drawable/join_batch_header" />
 
@@ -48,7 +48,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.06"
-                    android:text="ENROLL NOW · FLASH SALE"
+                    android:text="JOIN NEW BATCH"
                     android:textAllCaps="true"
                     android:textColor="@color/accentColor"
                     android:textSize="11sp"
@@ -58,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Legalstaan Course"
+                    android:text="CLAT PG 2027 Champions Course"
                     android:visibility="visible"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
@@ -68,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="₹51   ·   ₹11 with coupon FLASHSALE"
+                    android:text="₹6,500 with coupon PG2027"
                     android:textColor="#CCCCCC"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -79,6 +79,85 @@
                 android:contentDescription="Open"
                 android:src="@android:drawable/ic_media_next"
                 app:tint="@color/accentColor" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- App Content Course — locked premium content, gated by PaymentManager -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_app_content_course"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardBackgroundColor="@color/colorSurface"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/colorCardStroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp">
+
+            <ImageView
+                android:id="@+id/iv_app_content_lock"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="Locked"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_lock_lock"
+                app:tint="@color/accentColor" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_app_content_eyebrow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.06"
+                    android:text="PREMIUM · LOCKED"
+                    android:textAllCaps="true"
+                    android:textColor="@color/accentColor"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="App Content Course"
+                    android:textColor="@color/colorHeadingText"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_app_content_sub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="₹51 · ₹11 with coupon FLASHSALE"
+                    android:textColor="@color/colorSecondaryText"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="Open"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="@color/colorSecondaryText" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
