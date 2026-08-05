@@ -119,8 +119,11 @@ public class SubjectVideosActivity extends AppCompatActivity {
 
     private void openItem(VideoItem item) {
         if (item.isPdf() || (isStudyMaterial && !item.isVideo())) {
-            // Drive's full PDF viewer in Chrome Custom Tab.
-            openInCustomTab("https://drive.google.com/file/d/" + item.fileId + "/view");
+            // Open natively in-app via PdfNotesActivity without external browser redirection
+            Intent pdfIntent = new Intent(this, PdfNotesActivity.class);
+            pdfIntent.putExtra(PdfNotesActivity.EXTRA_TITLE, item.title);
+            pdfIntent.putExtra(PdfNotesActivity.EXTRA_DRIVE_ID, item.fileId);
+            startActivity(pdfIntent);
             return;
         }
         // Video — try ExoPlayer first; falls back to WebView VideoActivity on error.

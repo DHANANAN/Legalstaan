@@ -304,9 +304,10 @@ public class AppContentCourseActivity extends AppCompatActivity {
      */
     private void openCourseContent() {
         Intent i = new Intent(this, SubjectVideosActivity.class);
-        i.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_ID, "__study_materials__");
+        i.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_ID, "app_content_course");
         i.putExtra(SubjectVideosActivity.EXTRA_SUBJECT_TITLE, COURSE_TITLE);
         i.putExtra(SubjectVideosActivity.EXTRA_IS_STUDY_MATERIAL, true);
+        i.putExtra(SubjectVideosActivity.EXTRA_FOLDER_ID, "1C6MUUCFbKD5MglfikKP6ancKjJTxYJ1Z");
         startActivity(i);
     }
 

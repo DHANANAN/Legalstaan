@@ -17,8 +17,8 @@ android {
         applicationId "com.legalstaan.app"
         minSdk 23
         targetSdk 35
-        versionCode 34
-        versionName "1.33"
+        versionCode 35
+        versionName "1.35"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -29,11 +29,6 @@ android {
                 storePassword keystoreProperties['storePassword']
                 keyAlias      keystoreProperties['keyAlias']
                 keyPassword   keystoreProperties['keyPassword']
-            } else {
-                storeFile     file("release-key.jks")
-                storePassword System.getenv("LEGALSTAAN_STORE_PASSWORD") ?: ""
-                keyAlias      System.getenv("LEGALSTAAN_KEY_ALIAS") ?: "release-key"
-                keyPassword   System.getenv("LEGALSTAAN_KEY_PASSWORD") ?: ""
             }
         }
     }
@@ -43,7 +38,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            signingConfig (keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug)
         }
     }
 
