@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "1055408756496",
+    "firebase_url": "https://legalstaan-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "legalstaan",
     "storage_bucket": "legalstaan.firebasestorage.app"
   },
@@ -12,7 +13,28 @@
           "package_name": "com.legalstaan.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1055408756496-a5ac6eg556cgcr5uulvds8mblcuona7t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legalstaan.app",
+            "certificate_hash": "2acd027533aa266c2bede5a17efd98257f98d6c0"
+          }
+        },
+        {
+          "client_id": "1055408756496-hn1k6g9u6r2f9f3dg8o9l2t03297ekga.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legalstaan.app",
+            "certificate_hash": "a2ceaad9ce99e2ebaaca1f9f640ba64eec5cbbad"
+          }
+        },
+        {
+          "client_id": "1055408756496-3n7te4u5kdbasap209k11jkjr8tk86hp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD5ik_V30tAhvEEuS7aXPkGrOCZnrxzNck"
@@ -20,7 +42,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055408756496-3n7te4u5kdbasap209k11jkjr8tk86hp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
