@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "1055408756496-e0ecc9d700a7c8f5642bc36efa9a1aa7a96e30b5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.legalstaan.app",
+            "certificate_hash": "e0ecc9d700a7c8f5642bc36efa9a1aa7a96e30b5"
+          }
+        },
+        {
           "client_id": "1055408756496-3n7te4u5kdbasap209k11jkjr8tk86hp.apps.googleusercontent.com",
           "client_type": 3
         }
