@@ -228,14 +228,47 @@ public class SubjectVideosActivity extends AppCompatActivity {
         DriveListing.fetchFolderRecursive(folderId, driveApiKey, new DriveListing.Callback() {
             @Override
             public void onResult(List<VideoItem> result) {
-                presentItems(result);
+                if (result != null && !result.isEmpty()) {
+                    presentItems(result);
+                } else {
+                    fallbackToStaticConfig();
+                }
             }
 
             @Override
             public void onError(String message) {
-                showError(message);
+                fallbackToStaticConfig();
             }
         });
+    }
+
+    private void fallbackToStaticConfig() {
+        try {
+            JSONObject root = readConfig();
+            JSONArray subjects = root.getJSONArray("subjects");
+            List<VideoItem> fallbackItems = new ArrayList<>();
+            for (int i = 0; i < subjects.length(); i++) {
+                JSONObject subj = subjects.getJSONObject(i);
+                if (folderId != null && folderId.equals(subj.optString("folder_id", ""))) {
+                    JSONArray videos = subj.optJSONArray("videos");
+                    if (videos != null) {
+                        for (int j = 0; j < videos.length(); j++) {
+                            JSONObject v = videos.getJSONObject(j);
+                            fallbackItems.add(new VideoItem(v.getString("title"), v.getString("file_id"),
+                                    isStudyMaterial ? VideoItem.MIME_PDF : "video/mp4"));
+                        }
+                    }
+                    break;
+                }
+            }
+            if (!fallbackItems.isEmpty()) {
+                presentItems(fallbackItems);
+            } else {
+                showError("Could not reach Drive folder. Check link share settings.");
+            }
+        } catch (Exception e) {
+            showError("Drive connection failed and fallback unavailable.");
+        }
     }
 
     /** Group items into Lectures (videos) + Material (PDFs) sections. */
