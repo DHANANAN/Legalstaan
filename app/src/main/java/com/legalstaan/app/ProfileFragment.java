@@ -165,20 +165,9 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.row_sign_out).setOnClickListener(v -> signOut());
     }
 
-    /** Handles runtime permission before opening gallery. */
+    /** System photo picker launch — system pickers do not require broad storage permissions. */
     private void requestPhotoAndPick() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+: READ_MEDIA_IMAGES
-            if (ContextCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-                imagePicker.launch("image/*");
-            } else {
-                permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
-            }
-        } else {
-            // Android 6–12: READ_EXTERNAL_STORAGE (or not needed for GetContent)
-            imagePicker.launch("image/*");
-        }
+        imagePicker.launch("image/*");
     }
 
     private void saveAndLoadProfilePic(Uri uri) {
