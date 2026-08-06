@@ -161,7 +161,7 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.row_settings).setOnClickListener(v -> showSettings());
         view.findViewById(R.id.row_how_to).setOnClickListener(v -> showHowToUse());
         view.findViewById(R.id.row_privacy).setOnClickListener(v ->
-                openUrl("https://legalstaan.com/"));
+                openUrl("https://dhananan.github.io/Legalstaan-LLC/privacy"));
         view.findViewById(R.id.row_sign_out).setOnClickListener(v -> signOut());
     }
 

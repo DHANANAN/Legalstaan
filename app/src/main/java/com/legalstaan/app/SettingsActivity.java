@@ -50,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
                         "Hi Legalstaan team,\n\n"));
 
         findViewById(R.id.row_privacy).setOnClickListener(v ->
-                openUrl("https://legalstaan.com/privacy"));
+                openUrl("https://dhananan.github.io/Legalstaan-LLC/privacy"));
 
         findViewById(R.id.row_terms).setOnClickListener(v ->
                 openUrl("https://legalstaan.com/terms"));
