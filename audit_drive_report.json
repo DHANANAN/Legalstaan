@@ -1,0 +1,32 @@
+{
+  "audit_timestamp": "2026-08-06T09:39:15+05:30",
+  "drive_root_folder": "https://drive.google.com/drive/folders/1C6MUUCFbKD5MglfikKP6ancKjJTxYJ1Z?usp=drive_link",
+  "summary": {
+    "total_checked": 106,
+    "accessible_http_200": 66,
+    "restricted_http_401_403": 30,
+    "deleted_http_404": 10,
+    "reconciled_valid_items_in_config": 51
+  },
+  "removed_deleted_links_404": [
+    {"subject": "trademark_law", "title": "Trademark Law - Lecture 10", "file_id": "1cNpDbTRYbxRykqtjj0p584NIhSjytDG3"},
+    {"subject": "trademark_law", "title": "Trademark Law - Lecture 16", "file_id": "1nitAj6IzltWfQqGMAorm-k9upsIwqgs_"},
+    {"subject": "plant_variety", "title": "Plant Variety & Farmers Rights Act - Lecture 1", "file_id": "14iCz9EIugOUERJsPTRnkyeRpaXw6Z7Tt"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 5", "file_id": "1YJXudb_c2Ix3CpAgE58TujbR_8-2xVhn"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 6", "file_id": "1POULhFf6KSKfVsR6zbZa0ggcMgA4IC45"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 7", "file_id": "12fOBWJKY-2NiNcY1cMVsovZNivfpy9pg"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 8", "file_id": "1Fm2PtzjgvKJXGqRso6WqjueV8QwYk5Aq"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 9", "file_id": "1QDyGKDeZW3RU5M_6K49xA2j_k1A3lKLY"},
+    {"subject": "copyright_law", "title": "Copyright Law - Lecture 10", "file_id": "1DWP8ZACeZX7h4rEw23hpEXr-12FTIo0E"},
+    {"subject": "constitution", "title": "Constitution - Lecture 1", "file_id": "1g9_Act4s_77m8Xo9gdlQmhrSXP853p4u"},
+    {"subject": "admin_law", "title": "Administrative Law - Lecture 4", "file_id": "1dB1dXxsuYeTOXL8TDv-preS1r32hAIHw"},
+    {"subject": "design_act", "title": "Design Act 2000 - Lecture 7", "file_id": "1CR7VRYumg7PE6vyute0J94JJ59XCPHKI"},
+    {"subject": "design_act", "title": "Design Act 2000 - Lecture 8", "file_id": "1Uv9QLvw7tMCI6dvIab3OzIXBhz0fN_x7"}
+  ],
+  "folder_screenshot_reconciliation": {
+    "trademark_law": ["Trademarks 8.mp4", "Trademark lecture 4.MP4", "Trademark 7.MP4", "Trademark 6.mp4", "Trademark 5.mp4", "Trademark 1.mp4"],
+    "enviro_law": ["Enviro1.mp4", "Enviro 2.mp4"],
+    "admin_law": ["Admin Law 3.mp4", "Admin Law 2.mp4", "Admin Law 1.mp4"],
+    "design_act": ["Design Act 6.mp4", "Design Act 5.mp4", "Design Act 4.mp4", "Design Act 3.mp4", "Design Act 2.mp4", "Design Act 1.mp4"]
+  }
+}
