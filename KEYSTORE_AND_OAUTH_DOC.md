@@ -1,65 +1,44 @@
-# Legalstaan Keystore & OAuth 2.0 Fingerprint Documentation (v1.35)
+# Legalstaan Keystore & OAuth 2.0 Fingerprint Documentation
 
-This document details all release key options and Google Cloud / Firebase OAuth configuration steps for Legalstaan v1.35 (`versionCode 35`).
-
----
-
-## 1. Keystore Inventory
-
-### Primary Dedicated v1.35 Keystore (`app/release-key-v35.jks`)
-- **Keystore File:** `app/release-key-v35.jks`
-- **Key Algorithm:** 4096-bit RSA
-- **Alias:** `release-key-v35`
-- **Store Password:** `password`
-- **Key Password:** `password`
-- **SHA-1 Fingerprint:** `A6:4A:92:D5:3B:39:6B:E8:07:9C:DF:2C:65:0B:35:08:41:8D:F3:C7`
-- **SHA-256 Fingerprint:** `C4:C4:EC:61:A9:A1:D1:D8:2C:9B:F1:A4:84:9B:C7:DF:6E:ED:AE:E4:A1:C4:E8:4C:DF:63:E8:56:46:A5:D1:B4`
-
-### Legacy Release Keystore (`app/release-key.jks`)
-- **Keystore File:** `app/release-key.jks`
-- **Alias:** `release-key`
-- **SHA-1 Fingerprint:** `A2:CE:AA:D9:CE:99:E2:EB:AA:CA:1F:9F:64:0B:A6:4E:EC:5C:BB:AD`
-- **SHA-256 Fingerprint:** `0C:6C:02:DD:AA:28:32:93:F8:05:BA:73:29:6D:E1:4D:08:27:26:45:56:64:58:6D:C2:C9:49:8B:8A:68:51:A8`
+This document details the exact certificate fingerprints configured in the Legalstaan Firebase Console for version 1.35 (`versionCode 35`).
 
 ---
 
-## 2. Firebase & Google Cloud Console Registration
+## 1. Active Release Keystore Details (`app/release-key.jks`)
 
-### Firebase Project Target
-- **Project ID:** `legalstaan`
-- **Project Number:** `1055408756496`
-- **Package Name:** `com.legalstaan.app`
+All production release builds (`app-release.apk` and `app-release.aab`) are signed strictly with `app/release-key.jks`.
 
-### Step-by-Step Registration Guide
-
-1. **Add Fingerprints to Firebase:**
-   - Go to [Firebase Console](https://console.firebase.google.com/) -> **legalstaan** project.
-   - Click ⚙ **Project Settings** -> **Your Apps** (`com.legalstaan.app`).
-   - Click **Add Fingerprint** and paste:
-     - SHA-1: `A6:4A:92:D5:3B:39:6B:E8:07:9C:DF:2C:65:0B:35:08:41:8D:F3:C7`
-     - SHA-256: `C4:C4:EC:61:A9:A1:D1:D8:2C:9B:F1:A4:84:9B:C7:DF:6E:ED:AE:E4:A1:C4:E8:4C:DF:63:E8:56:46:A5:D1:B4`
-   - Download the updated `google-services.json` and save to `app/google-services.json`.
-
-2. **Resolving Duplicate SHA-1 Warnings:**
-   - If Google Cloud Console flags SHA-1 as duplicate across projects:
-     - Prefer registering the SHA-256 fingerprint in Firebase and Google Cloud OAuth client settings.
-     - Delete any abandoned or test Android apps in older Firebase projects sharing `com.legalstaan.app`.
-
-3. **Google Drive API Key Restrictions:**
-   - Open [Google Cloud Console](https://console.cloud.google.com/) -> **APIs & Services** -> **Credentials**.
-   - Select your Drive API key (`drive_api_key`).
-   - Set **Application Restrictions** to **Android apps**.
-   - Add item:
-     - Package Name: `com.legalstaan.app`
-     - SHA-1: `A6:4A:92:D5:3B:39:6B:E8:07:9C:DF:2C:65:0B:35:08:41:8D:F3:C7`
-   - Set **API Restrictions** -> Restrict key -> Select **Google Drive API**.
+| Property | Value |
+|---|---|
+| **Keystore File** | `app/release-key.jks` |
+| **Keystore Type** | PKCS12 |
+| **Alias** | `release-key` |
+| **Keystore Password** | `password` |
+| **Key Password** | `password` |
+| **Release SHA-1** | `A2:CE:AA:D9:CE:99:E2:EB:AA:CA:1F:9F:64:0B:A6:4E:EC:5C:BB:AD` |
+| **Release SHA-256** | `0C:6C:02:DD:AA:28:32:93:F8:05:BA:73:29:6D:E1:4D:08:27:26:45:56:64:58:6D:C2:C9:49:8B:8A:68:51:A8` |
 
 ---
 
-## 3. Verification Commands
+## 2. Firebase Console Registered Fingerprints
 
-To re-verify keystore fingerprints via `keytool`:
+The following fingerprints are registered and active in Firebase Console for `com.legalstaan.app`:
+
+### SHA-1 Fingerprints
+1. `a2:ce:aa:d9:ce:99:e2:eb:aa:ca:1f:9f:64:0b:a6:4e:ec:5c:bb:ad` (Production Release Keystore)
+2. `2a:cd:02:75:33:aa:26:6c:2b:ed:e5:a1:7e:fd:98:25:7f:98:d6:c0` (Debug Keystore)
+
+*(Note: The duplicate/warning SHA-1 `e0:ec:c9:d7:00:a7...` with the yellow icon should be safely ignored or deleted from Firebase Console).*
+
+### SHA-256 Fingerprints
+1. `0c:6c:02:dd:aa:28:32:93:f8:05:ba:73:29:6d:e1:4d:08:27:26:45:56:64:58:6d:c2:c9:49:8b:8a:68:51:a8` (Production Release Keystore)
+
+---
+
+## 3. Verification Command
+
+To verify `app/release-key.jks` fingerprints locally:
 
 ```powershell
-keytool -list -v -keystore app/release-key-v35.jks -alias release-key-v35 -storepass password
+keytool -list -v -keystore app/release-key.jks -alias release-key -storepass password
 ```
