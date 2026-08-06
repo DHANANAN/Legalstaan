@@ -24,10 +24,17 @@ android {
 
     signingConfigs {
         release {
-            storeFile     file("release-key.jks")
-            storePassword "password"
-            keyAlias      "release-key"
-            keyPassword   "password"
+            if (file("release-key-v35.jks").exists()) {
+                storeFile     file("release-key-v35.jks")
+                storePassword "password"
+                keyAlias      "release-key-v35"
+                keyPassword   "password"
+            } else {
+                storeFile     file("release-key.jks")
+                storePassword "password"
+                keyAlias      "release-key"
+                keyPassword   "password"
+            }
         }
     }
 
