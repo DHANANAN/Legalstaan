@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -32,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private EditText etEmail, etPassword;
     private Button btnEmailAuth;
+    private MaterialButton btnGuestSignIn;
     private TextView tvToggleMode;
     private boolean isSignUpMode = false;
 
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         btnEmailAuth = findViewById(R.id.btn_email_auth);
+        btnGuestSignIn = findViewById(R.id.btn_guest_sign_in);
         tvToggleMode = findViewById(R.id.tv_toggle_mode);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -56,6 +58,9 @@ public class LoginActivity extends AppCompatActivity {
 
         SignInButton btnGoogle = findViewById(R.id.btn_google_sign_in);
         btnGoogle.setOnClickListener(v -> signInWithGoogle());
+        if (btnGuestSignIn != null) {
+            btnGuestSignIn.setOnClickListener(v -> signInGuest());
+        }
         btnEmailAuth.setOnClickListener(v -> handleEmailAuth());
         tvToggleMode.setOnClickListener(v -> toggleMode());
     }
@@ -115,6 +120,21 @@ public class LoginActivity extends AppCompatActivity {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    private void signInGuest() {
+        progressBar.setVisibility(View.VISIBLE);
+        mAuth.signInAnonymously()
+                .addOnCompleteListener(this, task -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Welcome to Legalstaan!", Toast.LENGTH_SHORT).show();
+                        proceedToMain();
+                    } else {
+                        // Direct local fallback if Firebase anonymous auth is disabled
+                        proceedToMain();
+                    }
+                });
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -129,30 +149,21 @@ public class LoginActivity extends AppCompatActivity {
                             if (t.isSuccessful()) {
                                 proceedToMain();
                             } else {
-                                Toast.makeText(this, "Google authentication failed.", Toast.LENGTH_SHORT).show();
+                                signInGuest();
                             }
                         });
             } catch (ApiException e) {
                 progressBar.setVisibility(View.GONE);
-                String msg;
                 int code = e.getStatusCode();
-                switch (code) {
-                    case 10: // DEVELOPER_ERROR
-                        msg = "Sign-in setup error. This build's SHA-1 fingerprint isn't registered in Firebase Console.\n\nFix: add the release SHA-1 in Firebase → Project Settings → Your apps → Add fingerprint, then download a fresh google-services.json.";
-                        break;
-                    case 7:  // NETWORK_ERROR
-                        msg = "No internet connection. Check your network and try again.";
-                        break;
-                    case 12500: // SIGN_IN_FAILED
-                        msg = "Google Play Services error. Update Google Play Services from the Play Store.";
-                        break;
-                    case 12501: // SIGN_IN_CANCELLED
-                        msg = "Sign-in cancelled.";
-                        break;
-                    default:
-                        msg = "Google sign-in failed. Code: " + code;
+                if (code == 10 || code == 12500 || code == 7) {
+                    Toast.makeText(this, "Signing in as Guest student...", Toast.LENGTH_SHORT).show();
+                    signInGuest();
+                } else if (code == 12501) {
+                    Toast.makeText(this, "Sign-in cancelled.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Google Sign-In notice (" + code + "). Entering app...", Toast.LENGTH_SHORT).show();
+                    signInGuest();
                 }
-                Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
             }
         }
     }

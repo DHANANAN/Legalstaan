@@ -44,6 +44,17 @@
             android:id="@+id/btn_google_sign_in"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Guest / Quick Access -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_guest_sign_in"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Continue as Guest"
+            android:textColor="@color/colorHeadingText"
+            android:textSize="14sp"
             android:layout_marginBottom="20dp" />
 
         <!-- Divider -->
