@@ -165,7 +165,7 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.row_sign_out).setOnClickListener(v -> signOut());
     }
 
-    /** System photo picker launch — system pickers do not require broad storage permissions. */
+    /** Launches System Photo Picker directly without broad storage permissions. */
     private void requestPhotoAndPick() {
         imagePicker.launch("image/*");
     }
